@@ -13,18 +13,14 @@ import static java.lang.Math.*;
  * @author Maksim Pelevin <maks.pelevin@oogis.ru>
  * @since 2015-08-05
  */
-public class XY_n_LatLon {
+public final class XY_n_LatLon {
 
-    public static void main(/*ignored*/ String[] args) {
-        Point2D saint_petersburg = new Point2D.Double(toRadians(59.967700001123575), toRadians(30.324245475479437));
-        Point2D xy = ll2xy(saint_petersburg);
-        System.out.println(xy);
-//        Coordinate ll = xy2ll(new Coordinate(6653612, 6350572, 0.0));
-        Point2D ll = xy2ll(xy);
-        System.out.println(toDegrees(ll.getX()) + ", " + toDegrees(ll.getY()));
-    }
-
-    private static Point2D ll2xy(Point2D source) {
+    /**
+     * Convert lat/lon coordinates from CSR SK-95 to x/y of Gauss-Kruger projection.
+     * @param source lat/lon point in radians
+     * @return x/y in meters with precision 0.001 meter.
+     */
+    public static Point2D ll2xy(Point2D source) {
         double B = source.getX();
         double L = toDegrees(source.getY());
 
@@ -48,7 +44,12 @@ public class XY_n_LatLon {
         return new Point2D.Double(x, y);
     }
 
-    private static Point2D xy2ll(Point2D source) {
+    /**
+     * Convert x/y of Gauss-Kruger projection to lat/lon in CSR SK-95.
+     * @param source x/y in meters
+     * @return lat/lon in CSR SK-95
+     */
+    public static Point2D xy2ll(Point2D source) {
 
         double x = source.getX();
         double y = source.getY();
@@ -78,6 +79,9 @@ public class XY_n_LatLon {
         double L = 6 * (n - 0.5) / 57.29577951 + l;
 
         return new Point2D.Double(B, L);
+    }
+
+    private XY_n_LatLon() {
     }
 }
 
