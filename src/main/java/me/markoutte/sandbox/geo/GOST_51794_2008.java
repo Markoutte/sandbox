@@ -10,13 +10,16 @@ import static java.lang.Math.*;
  *
  * @link http://protect.gost.ru/v.aspx?control=8&baseC=-1&page=0&month=-1&year=-1&search=&RegNum=1&DocOnPageCount=15&id=166620&pageK=49AC208C-DE64-46EE-BB57-95DDB08054BB
  *
+ * In this example it doesn't convert datums, so before using this methods you should manually or with other tools
+ * convert geographics (geodesic) points from one datum (such as WGS84) to another (for example, SK-42)
+ *
  * @author Maksim Pelevin <maks.pelevin@oogis.ru>
  * @since 2015-08-05
  */
-public final class XY_n_LatLon {
+public final class GOST_51794_2008 {
 
     /**
-     * Convert lat/lon coordinates from CSR SK-95 to x/y of Gauss-Kruger projection.
+     * Convert lat/lon coordinates from geodesic to x/y of Gauss-Kruger projection.
      * @param source lat/lon point in radians
      * @return x/y in meters with precision 0.001 meter.
      */
@@ -25,7 +28,7 @@ public final class XY_n_LatLon {
         double L = toDegrees(source.getY());
 
         int n = (int) floor((6 + L) / 6);
-        double l = (L - abs(3 + 6 * (n - 1))) / 57.29577951;
+        double l = (L - abs(3 + 6 * (n - 1))) / toDegrees(1);
 
         double x = 6367558.4968 * B - sin(2 * B) * (16002.89 + 66.9607 * pow(sin(B), 2) + 0.3515 * pow(sin(B), 4)
             - pow(l, 2) * (1594561.25 + 5336.535 * pow(sin(B), 2) + 26.790 * pow(sin(B), 4) + 0.149 * pow(sin(B), 6)
@@ -45,9 +48,9 @@ public final class XY_n_LatLon {
     }
 
     /**
-     * Convert x/y of Gauss-Kruger projection to lat/lon in CSR SK-95.
+     * Convert x/y of Gauss-Kruger projection to lat/lon.
      * @param source x/y in meters
-     * @return lat/lon in CSR SK-95
+     * @return lat/lon
      */
     public static Point2D xy2ll(Point2D source) {
 
@@ -76,12 +79,9 @@ public final class XY_n_LatLon {
         )))));
 
         double B = B0 + deltaB;
-        double L = 6 * (n - 0.5) / 57.29577951 + l;
+        double L = 6 * (n - 0.5) / toDegrees(1) + l;
 
         return new Point2D.Double(B, L);
-    }
-
-    private XY_n_LatLon() {
     }
 }
 
