@@ -1,5 +1,7 @@
 package me.markoutte.sandbox.swing.animation;
 
+import me.markoutte.sandbox.swing.SwingExample;
+
 import javax.swing.*;
 import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
@@ -12,13 +14,7 @@ import java.awt.*;
 public final class AnimationExample {
 
     public static void main(String[] args) {
-        JFrame frame = new JFrame();
-        frame.setTitle("Animation example");
-        frame.setContentPane(new ContentPane());
-        frame.setPreferredSize(new Dimension(640, 480));
-        frame.pack();
-        frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        frame.setVisible(true);
+        SwingExample.inFrame("Animation example", new ContentPane()).setVisible(true);
     }
 
     private static class ContentPane extends JPanel {
