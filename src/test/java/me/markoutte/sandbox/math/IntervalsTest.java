@@ -20,6 +20,10 @@ public class IntervalsTest {
         Assert.assertEquals(p1, new Point(4, 3));
         Point p2 = Intervals.intersection(new Point(7, 9), new Point(9, 1), new Point(2, 5), new Point(6, 1));
         Assert.assertNull(p2);
+
+        Point t1 = Intervals.intersection(new Point(1871, 950), new Point(1923, 865), new Point(1910, 0), new Point(1910, 864));
+        Point t2 = Intervals.intersection(new Point(1910, 0), new Point(1910, 864), new Point(1871, 950), new Point(1923, 865));
+        Assert.assertEquals(t1, t2);
     }
 
 }

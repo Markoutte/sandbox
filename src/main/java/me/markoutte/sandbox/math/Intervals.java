@@ -35,7 +35,7 @@ public class Intervals {
         double seg1_line2_start = a2 * start1.x + b2 * start1.y + d2;
         double seg1_line2_end = a2 * end1.x + b2 * end1.y + d2;
 
-        double seg2_line1_start = a1 * start2.x + b1 * start2.x + d1;
+        double seg2_line1_start = a1 * start2.x + b1 * start2.y + d1;
         double seg2_line1_end = a1 * end2.x + b1 * end2.y + d1;
 
         if (seg1_line2_start * seg1_line2_end >= 0 || seg2_line1_start * seg2_line1_end >= 0) {
