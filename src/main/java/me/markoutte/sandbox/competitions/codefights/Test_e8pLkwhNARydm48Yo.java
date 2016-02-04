@@ -34,6 +34,7 @@ public class Test_e8pLkwhNARydm48Yo {
         System.out.println(Arrays.toString(exp("7496314")));
         System.out.println(Arrays.toString(exp("0")));
         System.out.println(Arrays.toString(exp("6")));
+        System.out.println(Arrays.toString(exp(".630320")));
     }
 
     private static String[] exp(String n) {
@@ -43,10 +44,8 @@ public class Test_e8pLkwhNARydm48Yo {
         for (int i = 0, j = 0; i < n.length(); i++) {
             char c = n.charAt(i);
             if (!"0.".contains("" + c)) {
-                int p = Character.getNumericValue(c) * (int) Math.pow(10, Math.abs(d - i) - 1);
-                r[j++] = i < d ?
-                        String.format("%d", p) :
-                        String.format(".%s", new StringBuilder("" + p).reverse());
+                String p = "" + (c - 48) * (int) Math.pow(10, Math.abs(d - i) - 1);
+                r[j++] = i < d ? p : "." + new StringBuilder(p).reverse();
             }
         }
         return r;
