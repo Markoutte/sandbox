@@ -1,9 +1,6 @@
 package me.markoutte.sandbox.competitions.codefights;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
-import java.util.regex.Pattern;
 
 /**
  * You are given a decimal number n as a string. Transform it into an array of numbers (given as strings again), such that each number has only one nonzero digit and their sum equals n.
@@ -45,11 +42,12 @@ public class Test_e8pLkwhNARydm48Yo {
         d = d < 0 ? n.length() : d;
         for (int i = 0, j = 0; i < n.length(); i++) {
             char c = n.charAt(i);
-            if ("0.".contains("" + c)) continue;
-            int z = Character.getNumericValue(c);
-            r[j++] = i < d ?
-                    String.format("%d", z * (int) Math.pow(10, d - i - 1)) :
-                    String.format(".%s", new StringBuilder("" + z * (int) Math.pow(10, i - d - 1)).reverse());
+            if (!"0.".contains("" + c)) {
+                int p = Character.getNumericValue(c) * (int) Math.pow(10, Math.abs(d - i) - 1);
+                r[j++] = i < d ?
+                        String.format("%d", p) :
+                        String.format(".%s", new StringBuilder("" + p).reverse());
+            }
         }
         return r;
     }
