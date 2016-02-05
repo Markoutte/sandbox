@@ -27,7 +27,7 @@ import java.util.Arrays;
  * @author Maksim Pelevin <maks.pelevin@oogis.ru>
  * @since 2016-02-04
  */
-public class Test_e8pLkwhNARydm48Yo {
+public class CF04022016 {
 
     public static void main(String[] args) {
         System.out.println(Arrays.toString(exp("7970521.5544")));
