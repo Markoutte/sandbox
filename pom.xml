@@ -40,6 +40,12 @@
             <version>3.12.1.GA</version>
         </dependency>
 
+        <dependency>
+            <groupId>com.google.inject</groupId>
+            <artifactId>guice</artifactId>
+            <version>4.0</version>
+        </dependency>
+
     </dependencies>
 
     <properties>
