@@ -49,6 +49,7 @@ crashlytics-build.properties
 
 
 ### Maven template
+/src/main/java/me/markoutte/sandbox/FastCode.java
 target/
 pom.xml.tag
 pom.xml.releaseBackup
