@@ -10,6 +10,8 @@ import java.util.Scanner;
  * -XX:+UseConcMarkSweepGC
  * -XX:+UseG1GC
  *
+ * -Xms512m -Xmx512m
+ *
  * @see https://habrahabr.ru/post/112676/
  */
 public class MemoryTool {
@@ -18,13 +20,15 @@ public class MemoryTool {
     private static boolean cont = true;
     private static Scanner in = new Scanner(System.in);
 
+    public static final int MB = 5;
+
     public static void main(String[] args) throws Exception {
         System.out.println("Welcome to Memory Tool!");
 
         MemoryUtil.startGCMonitor();
 
         while (cont) {
-            System.out.println(String.format(help, objects.size(), objects.size() * 10));
+            System.out.println(String.format(help, objects.size(), objects.size() * MB));
             switch (in.nextInt()) {
                 case 1: createObjects(); break;
                 case 2: removeObjects(); break;
@@ -42,7 +46,7 @@ public class MemoryTool {
     private static void createObjects() {
         System.out.println("Creating objects...");
         for (int i = 0; i < 2; i++) {
-            objects.add(new byte[10 * 1024 * 1024]);
+            objects.add(new byte[MB * 1024 * 1024]);
         }
     }
 
