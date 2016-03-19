@@ -26,11 +26,11 @@ public class MemoryTool {
         while (cont) {
             System.out.println(String.format(help, objects.size(), objects.size() * 10));
             switch (in.nextInt()) {
-                case 0: cont = false; break;
                 case 1: createObjects(); break;
                 case 2: removeObjects(); break;
-                case 3: System.gc();
-                case 4: MemoryUtil.printUsage(true);
+                case 3: System.gc(); break;
+                case 4: MemoryUtil.printUsage(true); break;
+                default: cont = false; break;
             }
         }
 
