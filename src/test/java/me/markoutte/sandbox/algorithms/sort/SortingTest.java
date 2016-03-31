@@ -5,7 +5,10 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * @author Maksim Pelevin <maks.pelevin@oogis.ru>
@@ -18,7 +21,7 @@ public class SortingTest {
 
     @Before
     public void setUp() {
-        input = generate();
+        input = simple();
         output = Arrays.copyOf(input, input.length);
     }
 
@@ -50,8 +53,29 @@ public class SortingTest {
         }
     }
 
-    private int[] generate() {
+    private int[] simple() {
         return new int[]{5, 2, 8, 4, 9, 6, 1, 3, 7, 0};
+    }
+
+    private int[] random() {
+        List<Integer> numbers = new ArrayList<>();
+        for (int i = 0; i < 80; i++) {
+            numbers.add(i);
+        }
+        Collections.shuffle(numbers);
+        int[] input = new int[numbers.size()];
+        for (int i = 0; i < input.length; i++) {
+            input[i] = numbers.get(i);
+        }
+        return input;
+    }
+
+    private static int[] worst() {
+        int[] worst = new int[10_000];
+        for (int i = 0; i < worst.length; i++) {
+            worst[i] = worst.length - i;
+        }
+        return worst;
     }
 
     private void print(Sorting sorting) {
