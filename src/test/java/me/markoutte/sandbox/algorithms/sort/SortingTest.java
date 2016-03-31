@@ -45,25 +45,13 @@ public class SortingTest {
 
     @After
     public void tearDown() {
-        int value = output[0];
         for (int i = 0; i < input.length; i++) {
-            int current = output[i];
-            Assert.assertTrue(String.format("value %d is greater than %d", value, current), value <= current);
-            value = current;
+            Assert.assertEquals(i, output[i]);
         }
     }
 
     private int[] generate() {
-        return new int[]{5, 2, 4, 6, 1, 3};
-//        return worstInput();
-    }
-
-    private static int[] worstInput() {
-        int[] worst = new int[10_000];
-        for (int i = 0; i < worst.length; i++) {
-            worst[i] = worst.length - i;
-        }
-        return worst;
+        return new int[]{5, 2, 8, 4, 9, 6, 1, 3, 7, 0};
     }
 
     private void print(Sorting sorting) {
