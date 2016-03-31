@@ -24,16 +24,23 @@ public class SortingTest {
 
     @Test
     public void insertionSort() {
-        Sorting sort = new InsertionSorting();
-        sort.sort(output);
-        print(sort);
+        Sorting sorting = new InsertionSorting();
+        sorting.sort(output);
+        print(sorting);
     }
 
     @Test
     public void selectionSort() {
-        Sorting sort = new SelectionSorting();
-        sort.sort(output);
-        print(sort);
+        Sorting sorting = new SelectionSorting();
+        sorting.sort(output);
+        print(sorting);
+    }
+
+    @Test
+    public void mergeSort() {
+        MergeSorting sorting = new MergeSorting();
+        sorting.sort(output);
+        print(sorting);
     }
 
     @After
