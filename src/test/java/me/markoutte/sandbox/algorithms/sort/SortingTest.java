@@ -39,6 +39,11 @@ public class SortingTest {
         new MergeSorting().sort(output);
     }
 
+    @Test
+    public void bubbleSort() {
+        new BubbleSorting().sort(output);
+    }
+
     @After
     public void tearDown() {
         List<Integer> expected = new ArrayList<>(input.length);
