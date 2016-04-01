@@ -1,14 +1,11 @@
 package me.markoutte.sandbox.algorithms.sort;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
+import org.junit.rules.Stopwatch;
+import org.junit.runner.Description;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author Maksim Pelevin <maks.pelevin@oogis.ru>
@@ -18,68 +15,88 @@ public class SortingTest {
 
     private int[] input;
     private int[] output;
+    private Sequence sequence;
 
     @Before
     public void setUp() {
-        input = simple();
+        sequence = Sequence.SIMPLE;
+        input = sequence.generate();
         output = Arrays.copyOf(input, input.length);
     }
 
     @Test
     public void insertionSort() {
-        Sorting sorting = new InsertionSorting();
-        sorting.sort(output);
-        print(sorting);
+        new InsertionSorting().sort(output);
     }
 
     @Test
     public void selectionSort() {
-        Sorting sorting = new SelectionSorting();
-        sorting.sort(output);
-        print(sorting);
+        new SelectionSorting().sort(output);
     }
 
     @Test
     public void mergeSort() {
-        MergeSorting sorting = new MergeSorting();
-        sorting.sort(output);
-        print(sorting);
+        new MergeSorting().sort(output);
     }
 
     @After
     public void tearDown() {
+        List<Integer> expected = new ArrayList<>(input.length);
+        for (int i : input) expected.add(i);
+        Collections.sort(expected);
+
         for (int i = 0; i < input.length; i++) {
-            Assert.assertEquals(i, output[i]);
+            Assert.assertEquals(expected.get(i).intValue(), output[i]);
         }
     }
 
-    private int[] simple() {
-        return new int[]{5, 2, 8, 4, 9, 6, 1, 3, 7, 0};
+    public enum Sequence {
+        SIMPLE {
+            @Override
+            public int[] generate() {
+                return new int[]{5, 2, 8, 4, 9, 6, 1, 3, 7, 0};
+            }
+        },
+        RANDOM {
+            @Override
+            public int[] generate() {
+                List<Integer> numbers = new ArrayList<>();
+                for (int i = 0; i < 80; i++) {
+                    numbers.add(i);
+                }
+                Collections.shuffle(numbers);
+                int[] input = new int[numbers.size()];
+                for (int i = 0; i < input.length; i++) {
+                    input[i] = numbers.get(i);
+                }
+                return input;
+            }
+        },
+        WORST {
+            @Override
+            public int[] generate() {
+                int[] worst = new int[10_000];
+                for (int i = 0; i < worst.length; i++) {
+                    worst[i] = worst.length - i - 1;
+                }
+                return worst;
+            }
+        }
+        ;
+
+        public abstract int[] generate();
     }
 
-    private int[] random() {
-        List<Integer> numbers = new ArrayList<>();
-        for (int i = 0; i < 80; i++) {
-            numbers.add(i);
+    @Rule
+    public Stopwatch stopwatch = new Stopwatch() {
+        @Override
+        protected void finished(long nanos, Description description) {
+            System.out.println(String.format("%s (%d μs): %s -> %s",
+                    description.getMethodName().replace("Sort", ""),
+                    TimeUnit.NANOSECONDS.toMicros(nanos),
+                    Arrays.toString(input), Arrays.toString(output)
+                    ));
         }
-        Collections.shuffle(numbers);
-        int[] input = new int[numbers.size()];
-        for (int i = 0; i < input.length; i++) {
-            input[i] = numbers.get(i);
-        }
-        return input;
-    }
-
-    private static int[] worst() {
-        int[] worst = new int[10_000];
-        for (int i = 0; i < worst.length; i++) {
-            worst[i] = worst.length - i;
-        }
-        return worst;
-    }
-
-    private void print(Sorting sorting) {
-        System.out.println(String.format("%s: %s -> %s", sorting.getName(), Arrays.toString(input), Arrays.toString(output)));
-    }
+    };
 
 }
