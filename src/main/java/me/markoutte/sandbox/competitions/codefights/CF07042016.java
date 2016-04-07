@@ -37,13 +37,13 @@ import java.util.Arrays;
 public class CF07042016 {
 
     public static void main(String[] args) {
-        System.out.println(Arrays.toString(kBitsDigits(5, 3)));
+        System.out.println(Arrays.toString(kBitsDigits(4, 1)));
     }
 
     private static int[] kBitsDigits(int n, int k) {
         int[] r = {};
-        for (int i = 0; i < 1 << n; i++) {
-            if (Integer.toBinaryString(i).replace("0", "").length() == k)
+        for (int i = -1; ++i < 1 << n;) {
+            if (Long.bitCount(i) == k)
                 (r = Arrays.copyOf(r, r.length + 1))[r.length - 1] = i;
         }
         return r;
