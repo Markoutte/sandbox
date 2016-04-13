@@ -46,6 +46,12 @@ public class IntervalsTest {
         Point2D[] intersection = Intervals.intersection(startLine, endLine, circleCenter, r);
         Assert.assertTrue(intersection.length == 1);
         Assert.assertEquals(new Point2D.Double(3, 2), intersection[0]);
+
+        startLine = new Point2D.Double(0, 1);
+        endLine = new Point2D.Double(3, 1);
+        intersection = Intervals.intersection(startLine, endLine, circleCenter, r);
+        Assert.assertTrue(intersection.length == 1);
+        Assert.assertEquals(new Point2D.Double(2, 1), intersection[0]);
     }
 
     @Test
