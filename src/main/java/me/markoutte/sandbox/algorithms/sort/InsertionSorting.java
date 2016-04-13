@@ -10,10 +10,9 @@ public class InsertionSorting implements Sorting {
     public void sort(int[] input) {
         for (int j = 1; j < input.length; j++) {
             int value = input[j];
-            for (int i = j - 1; i >= 0 && value < input[i];) {
+            for (int i = j - 1; i >= 0 && value < input[i]; i--) {
                 input[i + 1] = input[i];
-                i--;
-                input[i + 1] = value;
+                input[i] = value;
             }
         }
     }
