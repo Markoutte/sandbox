@@ -1,6 +1,11 @@
 package me.markoutte.sandbox.math;
 
 import java.awt.*;
+import java.awt.geom.Point2D;
+
+import static java.lang.Math.*;
+import static java.lang.Math.hypot;
+import static java.lang.Math.pow;
 
 /**
  * @author Maksim Pelevin <maks.pelevin@oogis.ru>
@@ -45,6 +50,46 @@ public class Intervals {
         double u = seg1_line2_start / (seg1_line2_start - seg1_line2_end);
 
         return new Point((int) (start1.x + u * dir1.x), (int) (start1.y + u * dir1.y));
+    }
+
+    public static Point2D[] intersection(Point2D lineStart, Point2D lineEnd, Point2D circleCenter, double circleRadius) {
+
+        double x1 = lineStart.getX() - circleCenter.getX();
+        double y1 = lineStart.getY() - circleCenter.getY();
+        double x2 = lineEnd.getX() - circleCenter.getX();
+        double y2 = lineEnd.getY() - circleCenter.getY();
+        double r = circleRadius;
+
+        double dx = x2 - x1;
+        double dy = y2 - y1;
+        double dr = hypot(dx, dy);
+        double det = x1 * y2 - x2 * y1;
+
+        double temp = pow(r, 2) * pow(dr, 2) - pow(det, 2);
+
+        if (temp < 0) {
+            return new Point[0];
+        }
+
+        double x3 = det * dy;
+        double y3 = -1 * det * dx;
+
+        if (temp == 0) {
+            return new Point2D[]{new Point2D.Double(
+                    x3 / pow(dr, 2) + circleCenter.getX(),
+                    y3 / pow(dr, 2) + circleCenter.getY()
+            )};
+        }
+
+        double x31 = (x3 + signum(dy) * dx * sqrt(temp)) / pow(dr, 2);
+        double y31 = (y3 + abs(dy) * sqrt(temp)) / pow(dr , 2);
+        double x32 = (x3 - signum(dy) * dx * sqrt(temp)) / pow(dr, 2);
+        double y32 = (y3 - abs(dy) * sqrt(temp)) / pow(dr , 2);
+
+        return new Point2D[] {
+                new Point2D.Double(x31 + circleCenter.getX(), y31 + circleCenter.getY()),
+                new Point2D.Double(x32 + circleCenter.getX(), y32 + circleCenter.getY()),
+        };
     }
 
 }
