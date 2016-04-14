@@ -2,6 +2,7 @@ package me.markoutte.sandbox.math;
 
 import java.awt.*;
 import java.awt.geom.Point2D;
+import java.util.Objects;
 
 import static java.lang.Math.*;
 import static java.lang.Math.hypot;
@@ -52,6 +53,35 @@ public class Intervals {
         return new Point((int) (start1.x + u * dir1.x), (int) (start1.y + u * dir1.y));
     }
 
+    /**
+     * This piece of code is end of my math with set of equations for equation of line.
+     */
+    public static Point2D calc(Point2D p1, Point2D p2, Point2D p3) {
+
+        // When first 2 points are equals then no calculation is required (anyway it gives NaN next)
+        if (Objects.equals(p1, p2)) {
+            return new Point2D.Double(p1.getX(), p2.getY());
+        }
+
+        double Y = (p2.getY() - p1.getY());
+        double X = (p2.getX() - p1.getX());
+        double Z = (p3.getY() - p1.getY());
+
+        double Y2 = pow(Y, 2);
+        double X2 = pow(X, 2);
+
+        double x = (Y2 * p1.getX() + X2 * p3.getX() + Z * X * Y) / (Y2 + X2);
+        double y = (x - p1.getX()) * Y / X + p1.getY();
+        if (Double.isNaN(y)) {
+            y = (x - p3.getX()) * (-X) / Y + p3.getY();
+        }
+
+        return new Point2D.Double(x, y);
+    }
+
+    /**
+     * Computes intersection for line defined by two points and circle with center and radius.
+     */
     public static Point2D[] intersection(Point2D lineStart, Point2D lineEnd, Point2D circleCenter, double circleRadius) {
 
         double x1 = lineStart.getX() - circleCenter.getX();
@@ -65,31 +95,40 @@ public class Intervals {
         double dr = hypot(dx, dy);
         double det = x1 * y2 - x2 * y1;
 
-        double temp = pow(r, 2) * pow(dr, 2) - pow(det, 2);
+        double incidence = pow(r, 2) * pow(dr, 2) - pow(det, 2);
 
-        if (temp < 0) {
+        if (incidence < 0) {
             return new Point[0];
         }
 
-        double x3 = det * dy;
-        double y3 = -1 * det * dx;
-
-        if (temp == 0) {
+        if (incidence == 0) {
             return new Point2D[]{new Point2D.Double(
-                    x3 / pow(dr, 2) + circleCenter.getX(),
-                    y3 / pow(dr, 2) + circleCenter.getY()
+                    (det * dy) / pow(dr, 2) + circleCenter.getX(),
+                    (-1 * det * dx) / pow(dr, 2) + circleCenter.getY()
             )};
         }
 
-        double x31 = (x3 + signum(dy) * dx * sqrt(temp)) / pow(dr, 2);
-        double y31 = (y3 + abs(dy) * sqrt(temp)) / pow(dr , 2);
-        double x32 = (x3 - signum(dy) * dx * sqrt(temp)) / pow(dr, 2);
-        double y32 = (y3 - abs(dy) * sqrt(temp)) / pow(dr , 2);
+        double x31 = ((det * dy) + (dy < 0 ? -1 : 1) * dx * sqrt(incidence)) / pow(dr, 2);
+        double y31 = ((-1 * det * dx) + abs(dy) * sqrt(incidence)) / pow(dr , 2);
+        double x32 = ((det * dy) - (dy < 0 ? -1 : 1) * dx * sqrt(incidence)) / pow(dr, 2);
+        double y32 = ((-1 * det * dx) - abs(dy) * sqrt(incidence)) / pow(dr , 2);
 
         return new Point2D[] {
                 new Point2D.Double(x31 + circleCenter.getX(), y31 + circleCenter.getY()),
                 new Point2D.Double(x32 + circleCenter.getX(), y32 + circleCenter.getY()),
         };
+    }
+
+    public static boolean inRange(Point2D start, Point2D end, Point2D hit) {
+        if (start.getX() == end.getX()) {  // special case
+            return start.getY() < end.getY() ? (start.getY() <= hit.getY() && hit.getY() <= end.getY()) : (end.getY() <= hit.getY() && hit.getY() <= start.getY());
+        }
+
+        double m = (end.getY() - start.getY()) / (end.getX() - start.getX());
+        double r1 = start.getX() + m * start.getY();
+        double r2 = end.getX() + m * end.getY();
+        double r = hit.getX() + m * hit.getY();
+        return r1 < r2 ? (r1 <= r && r <= r2) : (r2 <= r && r <= r1);
     }
 
 }

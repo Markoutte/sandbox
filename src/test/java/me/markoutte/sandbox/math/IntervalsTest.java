@@ -5,7 +5,9 @@ import org.junit.Test;
 
 import java.awt.*;
 import java.awt.geom.Point2D;
+import java.util.Arrays;
 
+import static me.markoutte.sandbox.math.Intervals.inRange;
 import static org.junit.Assert.*;
 
 /**
@@ -46,12 +48,14 @@ public class IntervalsTest {
         Point2D[] intersection = Intervals.intersection(startLine, endLine, circleCenter, r);
         Assert.assertTrue(intersection.length == 1);
         Assert.assertEquals(new Point2D.Double(3, 2), intersection[0]);
+        Assert.assertTrue(inRange(startLine, endLine, intersection[0]));
 
         startLine = new Point2D.Double(0, 1);
         endLine = new Point2D.Double(3, 1);
         intersection = Intervals.intersection(startLine, endLine, circleCenter, r);
         Assert.assertTrue(intersection.length == 1);
         Assert.assertEquals(new Point2D.Double(2, 1), intersection[0]);
+        Assert.assertTrue(inRange(startLine, endLine, intersection[0]));
     }
 
     @Test
@@ -68,6 +72,47 @@ public class IntervalsTest {
         Point2D.Double secondExpected = new Point2D.Double(Math.cos(Math.toRadians(225)) * r + circleCenter.getX(), Math.sin(Math.toRadians(225)) * r + circleCenter.getX());
         Assert.assertEquals(secondExpected.getX(), intersection[1].getX(), 0.000000000001);
         Assert.assertEquals(secondExpected.getY(), intersection[1].getY(), 0.000000000001);
+
+        Assert.assertTrue(inRange(startLine, endLine, intersection[0]));
+        Assert.assertTrue(inRange(startLine, endLine, intersection[1]));
+    }
+
+    @Test
+    public void circleAndLineError() {
+        double r = 1;
+        Point2D startLine = new Point2D.Double(0, 4);
+        Point2D endLine = new Point2D.Double(4, 4);
+        Point2D circleCenter = new Point2D.Double(8, 4);
+        Point2D[] intersection = Intervals.intersection(startLine, endLine, circleCenter, r);
+        Assert.assertFalse(inRange(startLine, endLine, intersection[0]));
+        Assert.assertFalse(inRange(startLine, endLine, intersection[1]));
+
+        startLine = new Point2D.Double(0, 0);
+        endLine = new Point2D.Double(0, 4);
+        circleCenter = new Point2D.Double(0, 8);
+        intersection = Intervals.intersection(startLine, endLine, circleCenter, r);
+        Assert.assertFalse(inRange(startLine, endLine, intersection[0]));
+        Assert.assertFalse(inRange(startLine, endLine, intersection[1]));
+
+        startLine = new Point2D.Double(0, 4);
+        endLine = new Point2D.Double(4, 4);
+        circleCenter = new Point2D.Double(5, 4);
+        intersection = Intervals.intersection(startLine, endLine, circleCenter, r);
+        Assert.assertTrue(intersection.length == 2);
+        Assert.assertEquals(new Point2D.Double(6, 4), intersection[0]);
+        Assert.assertEquals(new Point2D.Double(4, 4), intersection[1]);
+        Assert.assertFalse(inRange(startLine, endLine, intersection[0]));
+        Assert.assertTrue(inRange(startLine, endLine, intersection[1]));
+
+        startLine = new Point2D.Double(0, 0);
+        endLine = new Point2D.Double(0, 4);
+        circleCenter = new Point2D.Double(0, 5);
+        intersection = Intervals.intersection(startLine, endLine, circleCenter, r);
+        Assert.assertTrue(intersection.length == 2);
+        Assert.assertEquals(new Point2D.Double(0, 6), intersection[0]);
+        Assert.assertEquals(new Point2D.Double(0, 4), intersection[1]);
+        Assert.assertFalse(inRange(startLine, endLine, intersection[0]));
+        Assert.assertTrue(inRange(startLine, endLine, intersection[1]));
     }
 
 }
