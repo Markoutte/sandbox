@@ -71,7 +71,7 @@ public class LineCalcTest {
     public void run() {
 
         for (Map.Entry<List<Point2D>, Point2D> entry : hugeSet.entrySet()) {
-            Point2D result = calc(
+            Point2D result = Intervals.dropPerpendicular(
                     entry.getKey().get(0),
                     entry.getKey().get(1),
                     entry.getKey().get(2)
@@ -81,30 +81,5 @@ public class LineCalcTest {
         }
     }
 
-    /**
-     * This piece of code is end of my math with set of equations for equation of line.
-     */
-    public static Point2D calc(Point2D p1, Point2D p2, Point2D p3) {
-
-        // When first 2 points are equals then no calculation is required (anyway it gives NaN next)
-        if (Objects.equals(p1, p2)) {
-            return new Point2D.Double(p1.getX(), p2.getY());
-        }
-
-        double Y = (p2.getY() - p1.getY());
-        double X = (p2.getX() - p1.getX());
-        double Z = (p3.getY() - p1.getY());
-
-        double Y2 = pow(Y, 2);
-        double X2 = pow(X, 2);
-
-        double x = (Y2 * p1.getX() + X2 * p3.getX() + Z * X * Y) / (Y2 + X2);
-        double y = (x - p1.getX()) * Y / X + p1.getY();
-        if (Double.isNaN(y)) {
-            y = (x - p3.getX()) * (-X) / Y + p3.getY();
-        }
-
-        return new Point2D.Double(x, y);
-    }
 
 }

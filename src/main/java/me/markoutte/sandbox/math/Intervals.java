@@ -56,8 +56,7 @@ public class Intervals {
     /**
      * This piece of code is end of my math with set of equations for equation of line.
      */
-    public static Point2D calc(Point2D p1, Point2D p2, Point2D p3) {
-
+    public static Point2D dropPerpendicular(Point2D p1, Point2D p2, Point2D p3) {
         // When first 2 points are equals then no calculation is required (anyway it gives NaN next)
         if (Objects.equals(p1, p2)) {
             return new Point2D.Double(p1.getX(), p2.getY());
@@ -81,6 +80,8 @@ public class Intervals {
 
     /**
      * Computes intersection for line defined by two points and circle with center and radius.
+     *
+     * @see http://mathworld.wolfram.com/Circle-LineIntersection.html
      */
     public static Point2D[] intersection(Point2D lineStart, Point2D lineEnd, Point2D circleCenter, double circleRadius) {
 
