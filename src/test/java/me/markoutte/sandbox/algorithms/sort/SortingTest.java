@@ -3,6 +3,7 @@ package me.markoutte.sandbox.algorithms.sort;
 import org.junit.*;
 import org.junit.rules.Stopwatch;
 import org.junit.runner.Description;
+import org.junit.runners.MethodSorters;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -11,47 +12,48 @@ import java.util.concurrent.TimeUnit;
  * @author Maksim Pelevin <maks.pelevin@oogis.ru>
  * @since 2016-03-31
  */
+@FixMethodOrder(MethodSorters.JVM)
 public class SortingTest {
 
-    private int[] input;
+    private static final int[] input = Sequence.SIMPLE.generate();
+    private static final int[] expected = Arrays.copyOf(input, input.length);
     private int[] output;
-    private Sequence sequence;
 
-    @Before
-    public void setUp() {
-        sequence = Sequence.SIMPLE;
-        input = sequence.generate();
-        output = Arrays.copyOf(input, input.length);
+    @BeforeClass
+    public static void initialize() throws Exception {
+        Arrays.sort(expected);
     }
 
     @Test
     public void insertionSort() {
-        new InsertionSorting().sort(output);
+        check(new InsertionSorting());
     }
 
     @Test
     public void selectionSort() {
-        new SelectionSorting().sort(output);
+        check(new SelectionSorting());
     }
 
     @Test
     public void mergeSort() {
-        new MergeSorting().sort(output);
+        check(new MergeSorting());
     }
 
     @Test
     public void bubbleSort() {
-        new BubbleSorting().sort(output);
+        check(new BubbleSorting());
     }
 
-    @After
-    public void tearDown() {
-        List<Integer> expected = new ArrayList<>(input.length);
-        for (int i : input) expected.add(i);
-        Collections.sort(expected);
+    @Test
+    public void heapSort() {
+        check(new HeapSorting());
+    }
 
+    public void check(Sorting sorting) {
+        output = Arrays.copyOf(input, input.length);
+        sorting.sort(output);
         for (int i = 0; i < input.length; i++) {
-            Assert.assertEquals(expected.get(i).intValue(), output[i]);
+            Assert.assertEquals(expected[i], output[i]);
         }
     }
 
@@ -99,8 +101,12 @@ public class SortingTest {
             System.out.println(String.format("%s (%d μs): %s -> %s",
                     description.getMethodName().replace("Sort", ""),
                     TimeUnit.NANOSECONDS.toMicros(nanos),
-                    Arrays.toString(input), Arrays.toString(output)
+                    arrayToString(input), arrayToString(output)
                     ));
+        }
+
+        private String arrayToString(int[] array) {
+            return input.length > 1_000 ? "[...]" : Arrays.toString(array);
         }
     };
 

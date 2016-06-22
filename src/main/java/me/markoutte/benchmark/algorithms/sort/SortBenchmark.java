@@ -53,4 +53,14 @@ public class SortBenchmark {
         sorting.sort(array);
     }
 
+    @Benchmark
+    public void heapSort() {
+        Sorting sorting = new HeapSorting();
+        int[] array = new int[1000];
+        for (int i = 0; i < array.length; i++) {
+            array[i] = 1000 - i;
+        }
+        sorting.sort(array);
+    }
+
 }
