@@ -3,6 +3,7 @@ package me.markoutte.benchmark.algorithms.sort;
 import me.markoutte.sandbox.algorithms.sort.*;
 import org.openjdk.jmh.annotations.*;
 
+import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
 @Warmup(iterations = 5, time = 100, timeUnit = TimeUnit.MILLISECONDS)
@@ -13,44 +14,41 @@ import java.util.concurrent.TimeUnit;
 @State(Scope.Benchmark)
 public class SortBenchmark {
 
+    private static final int[] origin = new int[10_000];
+    static {
+        for (int i = 0; i < origin.length; i++) {
+            origin[i] = origin.length - i;
+        }
+    }
+
     @Benchmark
     public void insertionSort() {
         Sorting sorting = new InsertionSorting();
-        int[] array = new int[1000];
-        for (int i = 0; i < array.length; i++) {
-            array[i] = 1000 - i;
-        }
-        sorting.sort(array);
+        sorting.sort(Arrays.copyOf(origin, origin.length));
     }
 
     @Benchmark
     public void selectionSort() {
         Sorting sorting = new SelectionSorting();
-        int[] array = new int[1000];
-        for (int i = 0; i < array.length; i++) {
-            array[i] = 1000 - i;
-        }
-        sorting.sort(array);
+        sorting.sort(Arrays.copyOf(origin, origin.length));
     }
 
     @Benchmark
     public void bubbleSort() {
         Sorting sorting = new BubbleSorting();
-        int[] array = new int[1000];
-        for (int i = 0; i < array.length; i++) {
-            array[i] = 1000 - i;
-        }
-        sorting.sort(array);
+        sorting.sort(Arrays.copyOf(origin, origin.length));
     }
 
     @Benchmark
     public void mergeSort() {
         Sorting sorting = new MergeSorting();
-        int[] array = new int[1000];
-        for (int i = 0; i < array.length; i++) {
-            array[i] = 1000 - i;
-        }
-        sorting.sort(array);
+        sorting.sort(Arrays.copyOf(origin, origin.length));
+    }
+
+    @Benchmark
+    public void heapSort() {
+        Sorting sorting = new HeapSorting();
+        sorting.sort(Arrays.copyOf(origin, origin.length));
     }
 
 }
