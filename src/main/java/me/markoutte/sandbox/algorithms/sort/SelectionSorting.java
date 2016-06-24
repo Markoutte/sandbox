@@ -15,9 +15,7 @@ public class SelectionSorting implements Sorting {
                     index = i;
                 }
             }
-            int temp = input[j];
-            input[j] = input[index];
-            input[index] = temp;
+            exchange(input, j, index);
         }
     }
 }

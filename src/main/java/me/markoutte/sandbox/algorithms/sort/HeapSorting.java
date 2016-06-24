@@ -38,10 +38,4 @@ public class HeapSorting implements Sorting {
             }
         }
     }
-
-    private void exchange(int[] input, int i, int largest) {
-        input[i] = input[i] ^ input[largest];
-        input[largest] = input[i] ^ input[largest];
-        input[i] = input[i] ^ input[largest];
-    }
 }

@@ -12,10 +12,10 @@ import java.util.concurrent.TimeUnit;
  * @author Maksim Pelevin <maks.pelevin@oogis.ru>
  * @since 2016-03-31
  */
-@FixMethodOrder(MethodSorters.JVM)
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class SortingTest {
 
-    private static final int[] input = Sequence.SIMPLE.generate();
+    private static final int[] input = Sequence.RANDOM.generate();
     private static final int[] expected = Arrays.copyOf(input, input.length);
     private int[] output;
 

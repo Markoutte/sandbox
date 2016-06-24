@@ -8,8 +8,12 @@ public interface Sorting {
 
     void sort(int[] input);
 
-    default String getName() {
-        return getClass().getSimpleName().replace("Sorting", "");
+    default void exchange(int[] input, int i, int j) {
+        if (input[i] != input[j]) {
+            input[i] = input[i] ^ input[j];
+            input[j] = input[i] ^ input[j];
+            input[i] = input[i] ^ input[j];
+        }
     }
 
 }
