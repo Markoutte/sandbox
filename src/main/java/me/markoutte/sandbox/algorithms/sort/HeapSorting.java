@@ -22,13 +22,20 @@ public class HeapSorting implements Sorting {
     }
 
     private void heapify(int[] input, int heapsize, int i) {
-        int l = 2 * i + 1;
-        int r = 2 * i + 2;
-        int largest = (l < heapsize && input[l] > input[i]) ? l : i;
-        largest = (r < heapsize && input[r] > input[largest]) ? r : largest;
-        if (largest != i) {
-            exchange(input, i, largest);
-            heapify(input, heapsize, largest);
+        while (true) {
+            int l = 2 * i + 1;
+            int r = 2 * i + 2;
+            int largest = i;
+            if (l < heapsize && input[l] > input[largest])
+                largest = l;
+            if (r < heapsize && input[r] > input[largest])
+                largest = r;
+            if (largest != i) {
+                exchange(input, i, largest);
+                i = largest;
+            } else {
+                break;
+            }
         }
     }
 
