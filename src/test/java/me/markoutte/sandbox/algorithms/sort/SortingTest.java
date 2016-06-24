@@ -49,6 +49,11 @@ public class SortingTest {
         check(new HeapSorting());
     }
 
+    @Test
+    public void quickSort() {
+        check(new QuickSorting());
+    }
+
     public void check(Sorting sorting) {
         output = Arrays.copyOf(input, input.length);
         sorting.sort(output);

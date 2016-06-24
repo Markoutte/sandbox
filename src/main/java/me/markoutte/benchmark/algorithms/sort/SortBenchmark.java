@@ -51,4 +51,10 @@ public class SortBenchmark {
         sorting.sort(Arrays.copyOf(origin, origin.length));
     }
 
+    @Benchmark
+    public void quickSort() {
+        Sorting sorting = new QuickSorting();
+        sorting.sort(Arrays.copyOf(origin, origin.length));
+    }
+
 }
