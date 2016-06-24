@@ -10,7 +10,7 @@ public class QuickSorting implements Sorting {
         sort(input, 0, input.length - 1);
     }
 
-    private void sort(int[] input, int p, int r) {
+    protected void sort(int[] input, int p, int r) {
         if (p < r) {
             int q = partition(input, p, r);
             sort(input, p, q - 1);
@@ -18,7 +18,7 @@ public class QuickSorting implements Sorting {
         }
     }
 
-    private int partition(int[] input, int p, int r) {
+    protected int partition(int[] input, int p, int r) {
         int i = p - 1;
         for (int j = p; j < r; j++) {
             if (input[j] <= input[r]) {
@@ -27,5 +27,25 @@ public class QuickSorting implements Sorting {
         }
         exchange(input, i + 1, r);
         return i + 1;
+    }
+
+    public static class Random extends QuickSorting {
+
+        private static final java.util.Random rand = new java.util.Random();
+
+        @Override
+        protected void sort(int[] input, int p, int r) {
+            if (p < r) {
+                int q = randomizePartition(input, p, r);
+                sort(input, p, q - 1);
+                sort(input, q + 1, r);
+            }
+        }
+
+        private int randomizePartition(int[] input, int p, int r) {
+            int i = rand.nextInt((r - p) + 1) + p;
+            exchange(input, i, r);
+            return partition(input, p, r);
+        }
     }
 }

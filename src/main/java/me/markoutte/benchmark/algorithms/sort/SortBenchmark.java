@@ -6,8 +6,8 @@ import org.openjdk.jmh.annotations.*;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
-@Warmup(iterations = 5, time = 100, timeUnit = TimeUnit.MILLISECONDS)
-@Measurement(iterations = 10, time = 100, timeUnit = TimeUnit.MILLISECONDS)
+@Warmup(iterations = 10, time = 100, timeUnit = TimeUnit.MILLISECONDS)
+@Measurement(iterations = 20, time = 100, timeUnit = TimeUnit.MILLISECONDS)
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
 @Fork(2)
@@ -54,6 +54,12 @@ public class SortBenchmark {
     @Benchmark
     public void quickSort() {
         Sorting sorting = new QuickSorting();
+        sorting.sort(Arrays.copyOf(origin, origin.length));
+    }
+
+    @Benchmark
+    public void randomQuickSort() {
+        Sorting sorting = new QuickSorting.Random();
         sorting.sort(Arrays.copyOf(origin, origin.length));
     }
 

@@ -54,6 +54,11 @@ public class SortingTest {
         check(new QuickSorting());
     }
 
+    @Test
+    public void randomQuickSort() {
+        check(new QuickSorting.Random());
+    }
+
     public void check(Sorting sorting) {
         output = Arrays.copyOf(input, input.length);
         sorting.sort(output);
