@@ -22,7 +22,7 @@ public class HibernateConnectToDatabase {
 
         session.save(owner2);
         session.getTransaction().commit();
-
+        
         session.close();
         factory.close();
     }

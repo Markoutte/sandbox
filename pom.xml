@@ -20,18 +20,18 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- me.markoutte.sandbox.db.SimpleConnectToDatabase -->
-        <dependency>
-            <groupId>postgresql</groupId>
-            <artifactId>postgresql</artifactId>
-            <version>9.1-901-1.jdbc4</version>
-        </dependency>
-
         <!-- me.markoutte.sandbox.db.HibernateConnectToDatabase -->
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-core</artifactId>
             <version>3.6.3.Final</version>
+        </dependency>
+        
+        <!-- me.markoutte.sandbox.db -->
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <version>LATEST</version>
         </dependency>
 
         <!-- me.markoutte.sandbox.cdi -->

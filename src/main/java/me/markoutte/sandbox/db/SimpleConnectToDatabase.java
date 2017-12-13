@@ -12,14 +12,14 @@ import java.util.Properties;
 public class SimpleConnectToDatabase {
 
     public static void main(String[] args) throws Exception {
-        Class.forName("org.postgresql.Driver");
+        Class.forName("org.h2.Driver");
         Properties properties = new Properties();
-        properties.put("user", "postgres");
-        properties.put("password", "postgres");
-        try (Connection conn = DriverManager.getConnection("jdbc:postgresql://localhost/test", properties)) {
+        properties.put("user", "sa");
+        properties.put("password", "");
+        try (Connection conn = DriverManager.getConnection("jdbc:h2:mem:test", properties)) {
             Statement st = conn.createStatement();
-            st.execute("drop table owner;");
             st.execute("create table owner(id serial, name varchar, age integer);");
+            st.execute("drop table owner;");
             st.close();
         }
     }
