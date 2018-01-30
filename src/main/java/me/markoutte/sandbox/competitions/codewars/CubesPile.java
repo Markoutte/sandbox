@@ -16,7 +16,9 @@ package me.markoutte.sandbox.competitions.codewars;
 public class CubesPile {
 
     public static void main(String[] args) {
-        System.out.println(findNb(135440716410000L));
+        System.out.println(findNbWolf(1071225));
+        System.out.println(findNbWolf(135440716410000L));
+        System.out.println(findNb(1646842954019151682L));
     }
     
     public static long findNb(long m) {
@@ -25,6 +27,25 @@ public class CubesPile {
             totalVolume += n * n * n;
         }
         return totalVolume == m ? n : -1;
+    }
+
+    /**
+     * I can do math with https://www.wolframalpha.com/input/?i=sum+n%5E3,+n+%3D+1+to+l
+     * 
+     * because of sum n^3, n = 1 to l is equal 0.25 * l^2 (l + 1)^2 we can solve it.
+     * 
+     * But it doesn't work, because of double precision error when find root of big number.
+     * 
+     * For example, 1646842954019151682L incorrectly finds 50661, but for 50661 total volume is 1646842954019151681L.
+     */
+    public static long findNbWolf(long m) {
+        double res = Math.sqrt(m);
+        if (res - Math.floor(res) != 0) {
+            return -1;
+        }
+        double d = 1 + 8 * res;
+        double n = (Math.sqrt(d) - 1) / 2;
+        return n - Math.floor(n) == 0 ? (long) n : -1;
     }
 
 }
