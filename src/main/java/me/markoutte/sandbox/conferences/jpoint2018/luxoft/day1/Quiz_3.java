@@ -11,10 +11,7 @@ package me.markoutte.sandbox.conferences.jpoint2018.luxoft.day1;
  */
 public class Quiz_3 {
 
-    public static void main(String[] args) {
-
-        System.out.println(new String("t" + "r" + "u" + "e") == new String("true"));
-        
+    public static void main(String[] args) {        
         String str = "true";
         if ("t" + "r" + "u" + "e" == "true")
             System.out.print("1");
