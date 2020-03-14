@@ -8,6 +8,7 @@ import kotlin.collections.ArrayList
  *  THOMAS LENGAUER and ROBERT ENDRE TARJAN
  *  Stanford University
  */
+val root = 'R'
 val graph = mapOf(
         'R' to listOf('C', 'B', 'A'),
         'C' to listOf('F', 'G'),
@@ -38,13 +39,13 @@ val result = """
         D -> (12, B), R
         L -> (13, D), D
 """.trimIndent()
-val V = ArrayList(graph.keys + listOf('G')).sorted()
+val V = ArrayList(graph.keys).sorted()
 
 private fun Char.index(): Int = maxOf(V.binarySearch(this) + 1, 0)
 
 private fun Int.char(): Char = if (this == 0) '*' else V[this - 1]
 
-fun succ(v: Int): List<Int> = if (v == 0) listOf('R'.index()) else graph[v.char()]?.map { it.index() } ?: emptyList()
+fun succ(v: Int): List<Int> = if (v == 0) listOf(root.index()) else graph[v.char()]?.map { it.index() } ?: emptyList()
 
 // init
 var n = 0
@@ -92,6 +93,7 @@ fun main() {
             dom[w] = dom[dom[w]]
         }
     }
+    dom[0] = 0
 
     println("NODE -> (DFS, SDOM), IDOM")
     println("=========================")
