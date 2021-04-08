@@ -39,7 +39,7 @@ public class MergeSorting implements Sorting {
         }
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("unused")
     private void debug(int[] input, int p, int q, int r, int[] left, int[] right) {
         String sentinel = String.valueOf(MergeSorting.sentinel);
         System.out.println(Arrays.toString(input).replace(sentinel, "∞"));

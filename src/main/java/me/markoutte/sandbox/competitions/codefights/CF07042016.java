@@ -29,8 +29,6 @@ import java.util.Arrays;
  *
  * by https://codefights.com/profile/ravst
  *
- * @see https://codefights.com/challenge/uwTrqGQj8iE3xeibW
- *
  * @author Maksim Pelevin <maks.pelevin@oogis.ru>
  * @since 2016-04-07
  */

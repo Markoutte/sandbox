@@ -79,9 +79,9 @@ public class Intervals {
     }
 
     /**
-     * Computes intersection for line defined by two points and circle with center and radius.
+     * <p>Computes intersection for line defined by two points and circle with center and radius.</p>
      *
-     * @see http://mathworld.wolfram.com/Circle-LineIntersection.html
+     * @see <a href="http://mathworld.wolfram.com/Circle-LineIntersection.html">Circle-Line Intersection</a>
      */
     public static Point2D[] intersection(Point2D lineStart, Point2D lineEnd, Point2D circleCenter, double circleRadius) {
 

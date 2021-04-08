@@ -3,7 +3,6 @@ package me.markoutte.sandbox.gc;
 import com.sun.management.GarbageCollectionNotificationInfo;
 
 import javax.management.ListenerNotFoundException;
-import javax.management.Notification;
 import javax.management.NotificationEmitter;
 import javax.management.NotificationListener;
 import javax.management.openmbean.CompositeData;
@@ -14,7 +13,7 @@ import java.util.Map;
 /**
  * Memory util manually handles gc info.
  *
- * @see https://habrahabr.ru/post/269621/
+ * @see <a href="https://habrahabr.ru/post/269621/">Дюк, вынеси мусор! — Часть 1</a>
  */
 public class MemoryUtil {
     private static final int NORM_NAME_LENGTH = 25;
@@ -22,12 +21,12 @@ public class MemoryUtil {
     private static final long SIZE_MB = SIZE_KB * 1024;
     private static final long SIZE_GB = SIZE_MB * 1024;
     private static final String SPACES = "                    ";
-    private static Map<String, MemRegion> memRegions;
+    private static final Map<String, MemRegion> memRegions;
 
     // Вспомогательный класс для хранения информации о регионах памяти
     private static class MemRegion {
-        private boolean heap;        // Признак того, что это регион кучи
-        private String normName;    // Имя, доведенное пробелами до универсальной длины
+        private final boolean heap;        // Признак того, что это регион кучи
+        private final String normName;    // Имя, доведенное пробелами до универсальной длины
         public MemRegion(String name, boolean heap) {
             this.heap = heap;
             normName = name.length() < NORM_NAME_LENGTH ? name.concat(SPACES.substring(0, NORM_NAME_LENGTH - name.length())) : name;
@@ -42,29 +41,26 @@ public class MemoryUtil {
 
     static {
         // Запоминаем информацию обо всех регионах памяти
-        memRegions = new HashMap<String, MemRegion>(ManagementFactory.getMemoryPoolMXBeans().size());
+        memRegions = new HashMap<>(ManagementFactory.getMemoryPoolMXBeans().size());
         for(MemoryPoolMXBean mBean: ManagementFactory.getMemoryPoolMXBeans()) {
             memRegions.put(mBean.getName(), new MemRegion(mBean.getName(), mBean.getType() == MemoryType.HEAP));
         }
     }
 
     // Обработчик сообщений о сборке мусора
-    private static NotificationListener gcHandler = new NotificationListener() {
-        @Override
-        public void handleNotification(Notification notification, Object handback) {
-            if (notification.getType().equals(GarbageCollectionNotificationInfo.GARBAGE_COLLECTION_NOTIFICATION)) {
-                GarbageCollectionNotificationInfo gcInfo = GarbageCollectionNotificationInfo.from((CompositeData) notification.getUserData());
-                Map<String, MemoryUsage> memBefore = gcInfo.getGcInfo().getMemoryUsageBeforeGc();
-                Map<String, MemoryUsage> memAfter = gcInfo.getGcInfo().getMemoryUsageAfterGc();
-                StringBuilder sb = new StringBuilder();
-                sb.append("[").append(gcInfo.getGcAction()).append(" / ").append(gcInfo.getGcCause())
-                        .append(" / ").append(gcInfo.getGcName()).append(" / (");
-                appendMemUsage(sb, memBefore);
-                sb.append(") -> (");
-                appendMemUsage(sb, memAfter);
-                sb.append("), ").append(gcInfo.getGcInfo().getDuration()).append(" ms]");
-                System.out.println(sb.toString());
-            }
+    private static final NotificationListener gcHandler = (notification, handback) -> {
+        if (notification.getType().equals(GarbageCollectionNotificationInfo.GARBAGE_COLLECTION_NOTIFICATION)) {
+            GarbageCollectionNotificationInfo gcInfo = GarbageCollectionNotificationInfo.from((CompositeData) notification.getUserData());
+            Map<String, MemoryUsage> memBefore = gcInfo.getGcInfo().getMemoryUsageBeforeGc();
+            Map<String, MemoryUsage> memAfter = gcInfo.getGcInfo().getMemoryUsageAfterGc();
+            StringBuilder sb = new StringBuilder();
+            sb.append("[").append(gcInfo.getGcAction()).append(" / ").append(gcInfo.getGcCause())
+                    .append(" / ").append(gcInfo.getGcName()).append(" / (");
+            appendMemUsage(sb, memBefore);
+            sb.append(") -> (");
+            appendMemUsage(sb, memAfter);
+            sb.append("), ").append(gcInfo.getGcInfo().getDuration()).append(" ms]");
+            System.out.println(sb);
         }
     };
 
@@ -95,7 +91,7 @@ public class MemoryUtil {
         for(GarbageCollectorMXBean mBean: ManagementFactory.getGarbageCollectorMXBeans()) {
             try {
                 ((NotificationEmitter) mBean).removeNotificationListener(gcHandler);
-            } catch(ListenerNotFoundException e) {
+            } catch(ListenerNotFoundException ignored) {
             }
         }
     }

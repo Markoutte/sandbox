@@ -2,6 +2,7 @@ package me.markoutte.sandbox.gc;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Scanner;
 
 /**
@@ -12,13 +13,13 @@ import java.util.Scanner;
  *
  * -Xms512m -Xmx512m
  *
- * @see https://habrahabr.ru/post/112676/
+ * @see <a href="https://habrahabr.ru/post/112676/>Garbage Collection наглядно</a>
  */
 public class MemoryTool {
 
-    private static List objects = new ArrayList();
+    private static final List<byte[]> objects = new ArrayList<>();
     private static boolean cont = true;
-    private static Scanner in = new Scanner(System.in);
+    private static final Scanner in = new Scanner(System.in);
 
     public static final int MB = 5;
 

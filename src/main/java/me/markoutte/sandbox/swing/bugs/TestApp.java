@@ -2,8 +2,6 @@ package me.markoutte.sandbox.swing.bugs;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 /**
  * @author Maksim Pelevin <maks.pelevin@oogis.ru>
@@ -11,7 +9,7 @@ import java.awt.event.ActionListener;
  */
 public class TestApp {
 
-    private JFrame frame;
+    private final JFrame frame;
 
     public TestApp() {
         frame = new JFrame();
@@ -19,15 +17,10 @@ public class TestApp {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         JButton btnRun = new JButton("run");
-        btnRun.addActionListener(new ActionListener(){
-
-            @Override
-            public void actionPerformed(ActionEvent arg0) {
-                JDialog dialog = getChildDialog();
-                dialog.setModalityType(Dialog.ModalityType.APPLICATION_MODAL);
-                dialog.setVisible(true);
-            }
-
+        btnRun.addActionListener(arg0 -> {
+            JDialog dialog = getChildDialog();
+            dialog.setModalityType(Dialog.ModalityType.APPLICATION_MODAL);
+            dialog.setVisible(true);
         });
         frame.getContentPane().add(btnRun, BorderLayout.CENTER);
     }
@@ -50,14 +43,12 @@ public class TestApp {
     }
 
     public static void main(String[] args) {
-        EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                try {
-                    TestApp window = new TestApp();
-                    window.frame.setVisible(true);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+        EventQueue.invokeLater(() -> {
+            try {
+                TestApp window = new TestApp();
+                window.frame.setVisible(true);
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         });
     }

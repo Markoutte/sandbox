@@ -20,7 +20,7 @@ public class SortingTest {
     private int[] output;
 
     @BeforeClass
-    public static void initialize() throws Exception {
+    public static void initialize() {
         Arrays.sort(expected);
     }
 
@@ -78,7 +78,7 @@ public class SortingTest {
             @Override
             public int[] generate() {
                 List<Integer> numbers = new ArrayList<>();
-                for (int i = 0; i < 80; i++) {
+                for (int i = 0; i < 10000; i++) {
                     numbers.add(i);
                 }
                 Collections.shuffle(numbers);
@@ -108,11 +108,10 @@ public class SortingTest {
     public Stopwatch stopwatch = new Stopwatch() {
         @Override
         protected void finished(long nanos, Description description) {
-            System.out.println(String.format("%s (%d μs): %s -> %s",
+            System.out.printf("%s (%d μs): %s -> %s%n",
                     description.getMethodName().replace("Sort", ""),
                     TimeUnit.NANOSECONDS.toMicros(nanos),
-                    arrayToString(input), arrayToString(output)
-                    ));
+                    arrayToString(input), arrayToString(output));
         }
 
         private String arrayToString(int[] array) {

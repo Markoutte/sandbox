@@ -3,7 +3,6 @@ package me.markoutte.sandbox.swing.bugs;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -18,15 +17,12 @@ public class ClickThroughFrame extends JFrame {
         setTitle("Test click through");
         JPanel contentPane = new JPanel();
         JButton button = new JButton("Create frame");
-        button.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                TestFrame frame = new TestFrame(ClickThroughFrame.this, mouse);
-                frame.setTitle("Test " + new SimpleDateFormat().format(new Date()));
-                frame.setPreferredSize(new Dimension(200, 200));
-                frame.pack();
-                frame.setVisible(true);
-            }
+        button.addActionListener(e -> {
+            TestFrame frame = new TestFrame(ClickThroughFrame.this, mouse);
+            frame.setTitle("Test " + new SimpleDateFormat().format(new Date()));
+            frame.setPreferredSize(new Dimension(200, 200));
+            frame.pack();
+            frame.setVisible(true);
         });
         contentPane.add(button);
         setContentPane(contentPane);
