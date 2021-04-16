@@ -60,4 +60,9 @@ dependency-reduced-pom.xml
 buildNumber.properties
 .mvn/timing.properties
 
+build/
+gradle/
+gradlew
+gradlew.bat
+.gradle/
 
