@@ -41,7 +41,7 @@ public class MonsterMark {
     }
 
     private static class IconPainter extends JComponent {
-        private final FpsCounter fps = new FpsCounter();
+        private final EventCounter fps = new EventCounter(1000);
         private final List<SpriteImage32<Image>> cages = new ArrayList<>();
         private double counter = 0;
         private int requestNew = 0;
@@ -59,7 +59,7 @@ public class MonsterMark {
                         counter %= px * 10_000;
                     }
                     time = current;
-                    info.setText(String.format("%d monsters, fps = %d", cages.size(), fps.get()));
+                    info.setText(String.format("%d monsters, fps = %d", cages.size(), fps.size()));
                     info.setBounds(5, 5, info.getPreferredSize().width, info.getPreferredSize().height);
                     paintImmediately(0, 0, getWidth(), getWidth());
                 }

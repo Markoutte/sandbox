@@ -30,7 +30,7 @@ fun main() = Window(
     val cages = remember { mutableListOf<SpriteImage32<ImageBitmap>>().also {
         it.add(catch())
     }}
-    val repaints = remember { FpsCounter() }
+    val repaints = remember { EventCounter(1000) }
     val count = remember { mutableStateOf(cages.size) }
     val fps = remember { mutableStateOf(0) }
     val px = 100 // pixels per second
