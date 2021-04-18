@@ -82,7 +82,7 @@
             let offset = Math.floor(counter / 10) % c * 32
             ctx.drawImage(
                 value.image, offset, 0, value.width, value.height,
-                x, y, value.width / ratio, value.height / ratio
+                x, y, value.width, value.height
             )
         })
 
@@ -128,6 +128,7 @@
         canvas.style.height = oldHeight + 'px';
 
         ctx.scale(ratio, ratio);
+        ctx.imageSmoothingEnabled = false
 
         width = canvas.width / ratio
         height = canvas.height / ratio

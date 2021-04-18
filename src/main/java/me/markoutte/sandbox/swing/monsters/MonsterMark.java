@@ -7,7 +7,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.geom.AffineTransform;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -47,7 +46,7 @@ public class MonsterMark {
         private int requestNew = 0;
         private long time = System.nanoTime();
         private final long nanos = TimeUnit.SECONDS.toNanos(1);
-        private final int px = 100; // pixels per second
+        private final int px = 50; // pixels per second
         private final JLabel info = new JLabel();
 
         public IconPainter() {
@@ -78,18 +77,16 @@ public class MonsterMark {
         @Override
         protected void paintComponent(Graphics g) {
             Graphics2D g2d = (Graphics2D) g.create();
-            double scale = g2d.getTransform().getScaleX();
             Rectangle bounds = g2d.getClipBounds();
-            g2d.setTransform(new AffineTransform());
             g2d.setColor(getBackground());
-            g2d.fillRect(0, 0, (int) (bounds.width * scale), (int) (bounds.height * scale));
+            g2d.fillRect(0, 0, bounds.width, bounds.height);
 
             checkRequestAndAddIfNeeded();
 
             long s = Math.round(counter);
             for (SpriteImage32<Image> cage : cages) {
-                int w = (int) (bounds.width * scale + cage.width);
-                int h = (int) (bounds.height * scale + cage.height);
+                int w = bounds.width + cage.width;
+                int h = bounds.height + cage.height;
                 int x = (int) Math.round(cage.x * w + s) % w - cage.width;
                 int y = (int) Math.round(cage.y * h + s) % h - cage.height;
                 int count = cage.source.getWidth(null) / SpriteImage32.SIZE;

@@ -56,17 +56,18 @@ fun main() = Window(
     ) {
         val s = counter.value
         cages.forEach {
-            val w = size.width + it.width
-            val h = size.height + it.height
-            val x = ((it.x * w + s) % w - it.width).roundToInt()
-            val y = ((it.y * h + s) % h - it.height).roundToInt()
+            val w = size.width + it.width * density
+            val h = size.height + it.height * density
+            val x = ((it.x * w + s) % w - it.width * density).roundToInt()
+            val y = ((it.y * h + s) % h - it.height * density).roundToInt()
             val c = it.source.width / SpriteImage32.SIZE
             val offset = s / 10 % c * SpriteImage32.SIZE
             drawImage(
                 it.source,
                 srcOffset = IntOffset(offset, 0),
                 srcSize = IntSize(it.width, it.height),
-                dstOffset = IntOffset(x, y)
+                dstOffset = IntOffset(x, y),
+                dstSize = IntSize((it.width * density).toInt(), (it.height * density).toInt()),
             )
         }
         fps.value = repaints.update()

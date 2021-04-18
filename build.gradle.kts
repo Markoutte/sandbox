@@ -34,12 +34,6 @@ dependencies {
 
 java.sourceCompatibility = JavaVersion.VERSION_11
 
-tasks.withType<KotlinCompile>() {
+tasks.withType<KotlinCompile> {
     kotlinOptions.jvmTarget = "11"
-}
-
-compose.desktop {
-    application {
-        mainClass = "me.markoutte.sandbox.swing.bunnies.BunnyMarkKt"
-    }
 }
