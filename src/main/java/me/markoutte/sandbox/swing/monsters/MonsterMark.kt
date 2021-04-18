@@ -28,7 +28,7 @@ fun main() = Window(
     val height = remember { mutableStateOf(200) }
     val catch = { SpriteImage32.catchOne(sprite[Random.nextInt(sprite.size)]) }
     val cages = remember { mutableListOf<SpriteImage32<ImageBitmap>>().also {
-        (0 until 50).map { catch() }.forEach(it::add)
+        it.add(catch())
     }}
     val repaints = remember { FpsCounter() }
     val count = remember { mutableStateOf(cages.size) }

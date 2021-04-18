@@ -37,7 +37,7 @@ public class MonsterMark {
         });
         JFrame w = SwingExample.inFrame("Monsters Swing", painter);
         w.setVisible(true);
-        painter.requestNew = 50;
+        painter.requestNew = 1;
     }
 
     private static class IconPainter extends JComponent {
@@ -77,12 +77,12 @@ public class MonsterMark {
 
         @Override
         protected void paintComponent(Graphics g) {
-            fps.update();
-
             Graphics2D g2d = (Graphics2D) g.create();
             double scale = g2d.getTransform().getScaleX();
             Rectangle bounds = g2d.getClipBounds();
             g2d.setTransform(new AffineTransform());
+            g2d.setColor(getBackground());
+            g2d.fillRect(0, 0, (int) (bounds.width * scale), (int) (bounds.height * scale));
 
             checkRequestAndAddIfNeeded();
 
@@ -102,6 +102,7 @@ public class MonsterMark {
             }
 
             g2d.dispose();
+            fps.update();
         }
 
         private static final Random R = new Random();
