@@ -1,22 +1,24 @@
 package me.markoutte.sandbox.swing.monsters
 
-import androidx.compose.animation.core.*
 import androidx.compose.desktop.Window
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.*
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.layout.onSizeChanged
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import java.util.concurrent.TimeUnit
 import kotlin.math.roundToInt
 import kotlin.random.Random
 
@@ -24,62 +26,90 @@ fun main() = Window(
     title = "Monsters Compose",
     size = IntSize(640, 480)
 ) {
-    val width = remember { mutableStateOf(200) }
-    val height = remember { mutableStateOf(200) }
-    val catch = { SpriteImage32.catchOne(sprite[Random.nextInt(sprite.size)]) }
-    val cages = remember { mutableListOf<SpriteImage32<ImageBitmap>>().also {
-        it.add(catch())
-    }}
-    val repaints = remember { EventCounter(1000) }
-    val count = remember { mutableStateOf(cages.size) }
-    val fps = remember { mutableStateOf(0) }
-    val px = 100 // pixels per second
-    val ms = 1000 / px
-    val counter = rememberInfiniteTransition().animateValue(
-        initialValue = 0,
-        targetValue = 10_000 * px,
-        typeConverter = Int.VectorConverter,
-        animationSpec = infiniteRepeatable(tween(durationMillis = 10_000 * px * ms, easing = LinearEasing))
-    )
+
+    val state = remember { GameState() }
+    val scope = currentRecomposeScope
+    rememberCoroutineScope().launch {
+        delay(5)
+        state.update(System.nanoTime())
+        scope.invalidate()
+    }
+
+//   https://github.com/JetBrains/compose-jb/issues/153#issuecomment-817831381
+//   LaunchedEffect(state) {
+//       while (true) {
+//           withFrameNanos {
+//               state.update(it)
+//           }
+//       }
+//   }
 
     Canvas(modifier = Modifier
         .fillMaxSize()
         .background(Color.White)
         .onSizeChanged {
-            width.value = it.width
-            height.value = it.height
+            state.size = IntSize(it.width, it.height)
         }
-        .clickable(role = Role.Image) {
-            (0 until 1000).map { catch() }.forEach(cages::add)
-            count.value = cages.size
-        }
+        .clickable(
+            onClick = {
+                (0 until 1000).map { catchOne() }.forEach(cages::add)
+                state.count = cages.size
+            },
+            // don't draw an animation on click
+            indication = null,
+            interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() })
     ) {
-        val s = counter.value
+        val s = state.counter.roundToInt()
         cages.forEach {
             val w = size.width + it.width * density
             val h = size.height + it.height * density
             val x = ((it.x * w + s) % w - it.width * density).roundToInt()
             val y = ((it.y * h + s) % h - it.height * density).roundToInt()
             val c = it.source.width / SpriteImage32.SIZE
-            val offset = s / 10 % c * SpriteImage32.SIZE
-            drawImage(
-                it.source,
-                srcOffset = IntOffset(offset, 0),
-                srcSize = IntSize(it.width, it.height),
-                dstOffset = IntOffset(x, y),
-                dstSize = IntSize((it.width * density).toInt(), (it.height * density).toInt()),
-            )
+            val offset = (s / 20 % c * SpriteImage32.SIZE)
+            drawIntoCanvas { canvas ->
+                canvas.drawImageRect(
+                    it.source,
+                    srcOffset = IntOffset(offset, 0),
+                    srcSize = IntSize(it.width, it.height),
+                    dstOffset = IntOffset(x, y),
+                    dstSize = IntSize((it.width * density).toInt(), (it.height * density).toInt()),
+                    Paint().apply {
+                        filterQuality = FilterQuality.None
+                    }
+                )
+            }
         }
-        fps.value = repaints.update()
+        state.fps = repaints.update()
     }
 
-    Text("${count.value} monsters, fps = ${fps.value}",
+    Text("${state.count} monsters, fps = ${state.fps}",
         modifier = Modifier
             .offset(5.dp, 5.dp)
             .background(Color.White)
             .padding(5.dp)
     )
+}
 
+private val repaints = EventCounter(1000)
+
+private class GameState {
+    var size by mutableStateOf(IntSize(200, 200))
+    var count by mutableStateOf(cages.size)
+    var fps by mutableStateOf(0)
+    var counter by mutableStateOf(0.0)
+
+    private var time = System.nanoTime()
+    private val px = 100 // pixels per second
+    private val nanos = TimeUnit.SECONDS.toNanos(1)
+
+    fun update(current: Long) {
+        counter += (current - time) / nanos.toDouble() * px
+        if (counter > px * 10000) {
+            counter %= (px * 10000).toDouble()
+        }
+        time = current
+    }
 }
 
 private val sprite = Monsters.values().asSequence().map {
@@ -87,3 +117,7 @@ private val sprite = Monsters.values().asSequence().map {
         org.jetbrains.skija.Image.makeFromEncoded(data).asImageBitmap()
     }
 }.toList()
+
+private fun catchOne() = SpriteImage32.catchOne(sprite[Random.nextInt(sprite.size)])
+
+private val cages = mutableListOf<SpriteImage32<ImageBitmap>>(catchOne())
