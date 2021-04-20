@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 public class MonsterMark {
@@ -27,7 +28,7 @@ public class MonsterMark {
             })).toArray(Image[]::new);
 
     public static void main(String[] args) {
-        IconPainter painter = new IconPainter();
+        Painter painter = new Painter();
         painter.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -39,8 +40,8 @@ public class MonsterMark {
         painter.requestNew = 1;
     }
 
-    private static class IconPainter extends JComponent {
-        private final EventCounter fps = new EventCounter(1000);
+    private static class Painter extends JComponent {
+        private final EventCounter fps = new EventCounter(10000);
         private final List<SpriteImage32<Image>> cages = new ArrayList<>();
         private double counter = 0;
         private int requestNew = 0;
@@ -49,20 +50,19 @@ public class MonsterMark {
         private final int px = 50; // pixels per second
         private final JLabel info = new JLabel();
 
-        public IconPainter() {
-            new Timer(5, e -> {
-                {
+        public Painter() {
+
+            Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(() -> {
                     long current = System.nanoTime();
                     counter += (current - time) / (double) nanos * px;
-                    if (counter >  px * 10_000) {
+                    if (counter > px * 10_000) {
                         counter %= px * 10_000;
                     }
                     time = current;
                     info.setText(String.format("%d monsters, fps = %d", cages.size(), fps.size()));
                     info.setBounds(5, 5, info.getPreferredSize().width, info.getPreferredSize().height);
-                    paintImmediately(0, 0, getWidth(), getWidth());
-                }
-            }).start();
+                    repaint();
+            }, 0, 500, TimeUnit.MICROSECONDS);
 
             setOpaque(true);
             setBackground(Color.WHITE);
@@ -85,14 +85,11 @@ public class MonsterMark {
 
             long s = Math.round(counter);
             for (SpriteImage32<Image> cage : cages) {
-                int w = bounds.width + cage.width;
-                int h = bounds.height + cage.height;
-                int x = (int) Math.round(cage.x * w + s) % w - cage.width;
-                int y = (int) Math.round(cage.y * h + s) % h - cage.height;
-                int count = cage.source.getWidth(null) / SpriteImage32.SIZE;
-                int offset = (int) (s / 10 % count * SpriteImage32.SIZE);
+                Point p = cage.calcPoint(s, bounds.width, bounds.height, 1f);
+                long frame = time % nanos / (nanos / cage.source.getWidth(null) * SpriteImage32.SIZE);
+                int offset = (int) (frame * SpriteImage32.SIZE);
                 g2d.drawImage(cage.source,
-                        x, y, x + cage.width, y + cage.height,
+                        p.x, p.y, p.x + cage.width, p.y + cage.height,
                         offset, 0, offset + cage.width, cage.height,
                         null
                 );

@@ -23,7 +23,7 @@
 <script>
     const canvas = document.getElementById("canvas")
     const label = document.getElementById("label")
-    const ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext("2d", { alpha: false });
     const cages = []
     const times = []
     const ratio = window.devicePixelRatio || 1;
@@ -73,13 +73,17 @@
 
     function draw() {
         ctx.clearRect(0, 0, canvas.width, canvas.height)
+        let c = counter
         cages.forEach(value => {
             let w = width + value.width
             let h = height + value.height
-            let x = (value.x * w + counter) % w - value.width
-            let y = (value.y * h + counter) % h - value.height
-            let c = value.image.width / 32
-            let offset = Math.floor(counter / 10) % c * 32
+            let x = (value.x * w + c) % w - value.width
+            let y = (value.y * h + c) % h - value.height
+            // https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Optimizing_canvas#avoid_floating-point_coordinates_and_use_integers_instead
+            x = Math.round(x * ratio) / ratio
+            y = Math.round(y * ratio) / ratio
+            let frame = Math.floor(time % 1000 / (1000 / value.image.width * 32));
+            let offset = frame * 32
             ctx.drawImage(
                 value.image, offset, 0, value.width, value.height,
                 x, y, value.width, value.height
@@ -96,7 +100,7 @@
     }
 
 
-    const px = 100 / ratio
+    const px = 50
     let time = performance.now()
 
     function loop() {

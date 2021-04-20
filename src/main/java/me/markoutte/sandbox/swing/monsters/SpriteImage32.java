@@ -3,6 +3,7 @@ package me.markoutte.sandbox.swing.monsters;
 import org.jetbrains.annotations.NotNull;
 
 import javax.xml.bind.DatatypeConverter;
+import java.awt.*;
 import java.util.Random;
 import java.util.function.Function;
 
@@ -21,6 +22,15 @@ public final class SpriteImage32<T> {
         this.y = y;
         this.height = height;
         this.width = width;
+    }
+
+    public Point calcPoint(long monotonic, int canvasWidth, int canvasHeight, float density) {
+        var w = canvasWidth + width * density;
+        var h = canvasHeight + height * density;
+        return new Point(
+                (int) Math.round((x * w + monotonic) % w - width * density),
+                (int) Math.round((y * h + monotonic) % h - height * density)
+        );
     }
 
     public static <T> SpriteImage32<T> catchOne(T bunny) {
