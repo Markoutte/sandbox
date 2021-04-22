@@ -55,12 +55,11 @@ public class SwingPerformance {
     // https://hazelcast.com/blog/locksupport-parknanos-under-the-hood-and-the-curious-case-of-parking-part-ii-windows/
     public static void windowsTimerHack() {
         final String os = System.getProperty("os.name");
-        if (os != null && os.startsWith("Windows"));
-        {
+        if (os != null && os.startsWith("Windows")) {
             Thread t = new Thread(() -> {
                 try {
                     Thread.sleep(Long.MAX_VALUE);
-                } catch (InterruptedException e) {
+                } catch (InterruptedException ignored) {
                 }
             });
             t.setDaemon(true);
