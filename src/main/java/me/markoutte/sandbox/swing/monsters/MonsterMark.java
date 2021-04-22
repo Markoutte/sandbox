@@ -1,6 +1,7 @@
 package me.markoutte.sandbox.swing.monsters;
 
 import me.markoutte.sandbox.swing.SwingExample;
+import me.markoutte.sandbox.swing.SwingPerformance;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -28,6 +29,8 @@ public class MonsterMark {
             })).toArray(Image[]::new);
 
     public static void main(String[] args) {
+        SwingPerformance.windowsTimerHack();
+
         Painter painter = new Painter();
         painter.addMouseListener(new MouseAdapter() {
             @Override

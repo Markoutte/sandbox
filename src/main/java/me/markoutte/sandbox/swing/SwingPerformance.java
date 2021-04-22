@@ -16,6 +16,8 @@ public class SwingPerformance {
     private static int i = 0;
 
     public static void main(String[] args) {
+        windowsTimerHack();
+
         final long start = System.nanoTime();
         EventCounter c = new EventCounter(10000);
         int testDuration = 20_000;
@@ -50,4 +52,19 @@ public class SwingPerformance {
         frame.setVisible(true);
     }
 
+    // https://hazelcast.com/blog/locksupport-parknanos-under-the-hood-and-the-curious-case-of-parking-part-ii-windows/
+    public static void windowsTimerHack() {
+        final String os = System.getProperty("os.name");
+        if (os != null && os.startsWith("Windows"));
+        {
+            Thread t = new Thread(() -> {
+                try {
+                    Thread.sleep(Long.MAX_VALUE);
+                } catch (InterruptedException e) {
+                }
+            });
+            t.setDaemon(true);
+            t.start();
+        }
+    }
 }
