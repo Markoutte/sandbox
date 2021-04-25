@@ -6,6 +6,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -64,6 +65,18 @@ public class SwingPerformance {
             });
             t.setDaemon(true);
             t.start();
+        }
+    }
+
+    public static void enableVsyncHack(Container container) {
+        try {
+            System.setProperty("swing.bufferPerWindow", "true");
+            final Class<?> swing = Class.forName("com.sun.java.swing.SwingUtilities3");
+            final Method vsync = swing.getMethod("setVsyncRequested", Container.class, boolean.class);
+            vsync.invoke(null, container, true);
+            System.out.println(vsync);
+        } catch (Throwable t) {
+            t.printStackTrace();
         }
     }
 }
