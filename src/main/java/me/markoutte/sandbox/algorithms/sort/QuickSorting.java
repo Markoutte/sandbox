@@ -1,9 +1,5 @@
 package me.markoutte.sandbox.algorithms.sort;
 
-/**
- * @author Maksim Pelevin <maks.pelevin@oogis.ru>
- * @since 2016-06-24
- */
 public class QuickSorting implements Sorting {
     @Override
     public void sort(int[] input) {

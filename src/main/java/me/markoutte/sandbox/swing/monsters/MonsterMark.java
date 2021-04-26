@@ -30,35 +30,37 @@ public class MonsterMark {
             })).toArray(Image[]::new);
 
     public static void main(String[] args) {
-        final Painter.Policy policy = Painter.Policy.VSYNC_DRIVEN;
-        switch (policy) {
-            case TIMER_DRIVEN:
-                SwingPerformance.windowsTimerHack();
-                break;
-            // must be called before AWT is initialized
-            // see javax.swing.BufferStrategyPaintManager
-            //noinspection ConstantConditions
-            case VSYNC_DRIVEN:
+        SwingUtilities.invokeLater(() -> {
+            final Painter.Policy policy = Painter.Policy.VSYNC_DRIVEN;
+            switch (policy) {
+                case TIMER_DRIVEN:
+                    SwingPerformance.windowsTimerHack();
+                    break;
+                // must be called before AWT is initialized
+                // see javax.swing.BufferStrategyPaintManager
+                //noinspection ConstantConditions
+                case VSYNC_DRIVEN:
 //                System.setProperty("sun.java2d.opengl", "true");
-                System.setProperty("swing.bufferPerWindow", "true");
-                break;
-        }
+                    System.setProperty("swing.bufferPerWindow", "true");
+                    break;
+            }
 
-        Painter painter = new Painter(policy);
-        painter.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                painter.requestNew = 1000;
+            Painter painter = new Painter(policy);
+            painter.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    painter.requestNew = 1000;
+                }
+            });
+            JFrame w = SwingExample.inFrame("Monsters Swing", painter);
+            w.setVisible(true);
+            painter.requestNew = 1;
+
+            //noinspection ConstantConditions
+            if (policy == Painter.Policy.VSYNC_DRIVEN) {
+                SwingPerformance.enableVsyncHack(w);
             }
         });
-        JFrame w = SwingExample.inFrame("Monsters Swing", painter);
-        w.setVisible(true);
-        painter.requestNew = 1;
-
-        //noinspection ConstantConditions
-        if (policy == Painter.Policy.VSYNC_DRIVEN) {
-            SwingPerformance.enableVsyncHack(w);
-        }
     }
 
     private static class Painter extends JComponent {

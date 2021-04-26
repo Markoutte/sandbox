@@ -6,10 +6,6 @@ import javax.validation.ConstraintValidatorContext;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/**
- * @author Maksim Pelevin <maks.pelevin@oogis.ru>
- * @since 2016-03-31
- */
 public class ZipCodeValidator implements ConstraintValidator<ZipCode, String> {
 
     private Pattern zipPattern = Pattern.compile("\\d{5}(-\\d{5})?");

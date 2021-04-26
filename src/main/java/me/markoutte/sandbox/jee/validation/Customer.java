@@ -5,10 +5,6 @@ import javax.validation.constraints.Past;
 import javax.validation.constraints.Size;
 import java.util.Date;
 
-/**
- * @author Maksim Pelevin <maks.pelevin@oogis.ru>
- * @since 2016-03-31
- */
 public class Customer {
 
     @NotNull @Size(min = 2)

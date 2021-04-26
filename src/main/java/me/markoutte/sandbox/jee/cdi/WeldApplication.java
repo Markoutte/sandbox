@@ -3,10 +3,6 @@ package me.markoutte.sandbox.jee.cdi;
 import org.jboss.weld.environment.se.Weld;
 import org.jboss.weld.environment.se.WeldContainer;
 
-/**
- * @author Maksim Pelevin <maks.pelevin@oogis.ru>
- * @since 2016-03-23
- */
 public class WeldApplication {
 
     public static void main(String[] args) {

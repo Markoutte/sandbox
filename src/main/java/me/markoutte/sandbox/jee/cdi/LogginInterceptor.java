@@ -6,10 +6,6 @@ import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
 import java.util.logging.Logger;
 
-/**
- * @author Maksim Pelevin <maks.pelevin@oogis.ru>
- * @since 2016-03-23
- */
 @Interceptor
 @Loggable
 public class LogginInterceptor {

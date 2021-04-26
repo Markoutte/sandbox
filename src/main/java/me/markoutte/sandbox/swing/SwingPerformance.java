@@ -70,11 +70,9 @@ public class SwingPerformance {
 
     public static void enableVsyncHack(Container container) {
         try {
-            System.setProperty("swing.bufferPerWindow", "true");
             final Class<?> swing = Class.forName("com.sun.java.swing.SwingUtilities3");
             final Method vsync = swing.getMethod("setVsyncRequested", Container.class, boolean.class);
             vsync.invoke(null, container, true);
-            System.out.println(vsync);
         } catch (Throwable t) {
             t.printStackTrace();
         }

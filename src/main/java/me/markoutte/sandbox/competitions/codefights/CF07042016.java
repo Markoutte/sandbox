@@ -28,9 +28,6 @@ import java.util.Arrays;
  * The numbers with at most n bits k of which are set to 1 sorted in ascending order.
  *
  * by https://codefights.com/profile/ravst
- *
- * @author Maksim Pelevin <maks.pelevin@oogis.ru>
- * @since 2016-04-07
  */
 public class CF07042016 {
 

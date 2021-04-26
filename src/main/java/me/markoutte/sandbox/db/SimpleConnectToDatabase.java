@@ -5,10 +5,6 @@ import java.sql.DriverManager;
 import java.sql.Statement;
 import java.util.Properties;
 
-/**
- * @author Maksim Pelevin <maks.pelevin@oogis.ru>
- * @since 2016-02-10
- */
 public class SimpleConnectToDatabase {
 
     public static void main(String[] args) throws Exception {

@@ -1,9 +1,5 @@
 package me.markoutte.sandbox.algorithms.sort;
 
-/**
- * @author Maksim Pelevin <maks.pelevin@oogis.ru>
- * @since 2016-06-22
- */
 public class HeapSorting implements Sorting {
 
     @Override

@@ -6,10 +6,6 @@ import java.awt.event.*;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-/**
- * @author Maksim Pelevin <maks.pelevin@oogis.ru>
- * @since 2015-11-17
- */
 public class ClickThroughFrame extends JFrame {
 
     public ClickThroughFrame() throws HeadlessException {

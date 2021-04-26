@@ -2,10 +2,6 @@ package me.markoutte.sandbox.competitions;
 
 import java.util.*;
 
-/**
- * @author Maksim Pelevin <maks.pelevin@oogis.ru>
- * @since 2015-11-18
- */
 class A {
     public static void main(String[] a) {
 //        Scanner s = new Scanner(System.in);

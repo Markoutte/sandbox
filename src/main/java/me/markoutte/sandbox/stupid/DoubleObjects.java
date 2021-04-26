@@ -2,10 +2,6 @@ package me.markoutte.sandbox.stupid;
 
 import java.io.*;
 
-/**
- * @author Maksim Pelevin <maks.pelevin@oogis.ru>
- * @since 2016-03-01
- */
 public class DoubleObjects {
 
     private static class Singleton implements java.lang.Cloneable, Serializable {

@@ -8,10 +8,6 @@ import static java.lang.Math.*;
 import static java.lang.Math.hypot;
 import static java.lang.Math.pow;
 
-/**
- * @author Maksim Pelevin <maks.pelevin@oogis.ru>
- * @since 2015-11-16
- */
 public class Intervals {
 
     /**

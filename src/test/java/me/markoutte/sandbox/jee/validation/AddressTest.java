@@ -10,10 +10,6 @@ import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 
-/**
- * @author Maksim Pelevin <maks.pelevin@oogis.ru>
- * @since 2016-03-31
- */
 public class AddressTest {
 
     @Test

@@ -2,10 +2,6 @@ package me.markoutte.sandbox.db.dao;
 
 import javax.persistence.*;
 
-/**
- * @author Maksim Pelevin <maks.pelevin@oogis.ru>
- * @since 2016-02-10
- */
 @Entity
 @Table(name = "owner2")
 public class Owner2 {

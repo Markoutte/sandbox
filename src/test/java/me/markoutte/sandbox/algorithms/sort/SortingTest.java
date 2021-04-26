@@ -8,10 +8,6 @@ import org.junit.runners.MethodSorters;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
-/**
- * @author Maksim Pelevin <maks.pelevin@oogis.ru>
- * @since 2016-03-31
- */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class SortingTest {
 

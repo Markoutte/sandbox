@@ -23,9 +23,6 @@ import java.util.Arrays;
  * [output] array.string
  *
  * Elements in the array should be sorted in descending order.
- *
- * @author Maksim Pelevin <maks.pelevin@oogis.ru>
- * @since 2016-02-04
  */
 public class CF04022016 {
 

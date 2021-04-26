@@ -13,9 +13,6 @@ import static java.lang.Math.*;
  * Right the math, that calculates two lines intersection with 3 points known.
  *
  * First 2 points describe line and from 3 point required to let fall a perpendicular upon a line.
- *
- * @author Maksim Pelevin <maks.pelevin@oogis.ru>
- * @since 2015-09-01
  */
 public class LineCalcTest {
 

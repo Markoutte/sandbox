@@ -1,9 +1,5 @@
 package me.markoutte.sandbox.stupid;
 
-/**
- * @author Maksim Pelevin <maks.pelevin@oogis.ru>
- * @since 2016-03-02
- */
 public class IntegerObjectEquality {
 
     public static void main(String[] args) {

@@ -3,10 +3,6 @@ package me.markoutte.sandbox.stupid;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * @author Maksim Pelevin <maks.pelevin@oogis.ru>
- * @since 2016-03-01
- */
 public class ObjectResurrection {
 
     private static List<ObjectResurrection> zombies = new ArrayList<>();

@@ -10,10 +10,6 @@ import java.util.Arrays;
 import static me.markoutte.sandbox.math.Intervals.inRange;
 import static org.junit.Assert.*;
 
-/**
- * @author Maksim Pelevin <maks.pelevin@oogis.ru>
- * @since 2015-11-16
- */
 public class IntervalsTest {
 
     @Test

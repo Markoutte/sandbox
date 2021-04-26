@@ -7,16 +7,13 @@ import java.util.List;
 import java.util.function.Consumer;
 
 /**
- * Once upon a time men and women live together.
+ * <p>Once upon a time men and women live together.</p>
  *
- * But they wanted to split for community and do they work, as they wish...
+ * <p>But they wanted to split for community and do they work, as they wish...</p>
  *
- * PECS means «Producer extends, Consumer super» by Joshua Bloch.
+ * <p>PECS means «Producer extends, Consumer super» by Joshua Bloch.</p>
  *
- * @see https://habrahabr.ru/post/207360/
- *
- * @author Maksim Pelevin <maks.pelevin@oogis.ru>
- * @since 2016-03-09
+ * <p><a href="https://habrahabr.ru/post/207360/">https://habrahabr.ru/post/207360/</a></p>
  */
 public class PECS {
 

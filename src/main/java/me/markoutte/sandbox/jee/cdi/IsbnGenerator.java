@@ -5,10 +5,6 @@ import javax.inject.Inject;
 import java.util.Random;
 import java.util.logging.Logger;
 
-/**
- * @author Maksim Pelevin <maks.pelevin@oogis.ru>
- * @since 2016-03-23
- */
 @ThirteenDigits @Default
 public class IsbnGenerator implements NumberGenerator {
 

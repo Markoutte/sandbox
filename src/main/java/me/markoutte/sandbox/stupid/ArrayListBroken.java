@@ -11,9 +11,6 @@ import java.util.concurrent.Executors;
  *
  * Not so bad, sometimes it give {@link ArrayIndexOutOfBoundsException} (surprised, not so often),
  * and some items are cleared by another thread, that puts data at the same time.
- *
- * @author Maksim Pelevin <maks.pelevin@oogis.ru>
- * @since 2015-08-25
  */
 public class ArrayListBroken {
 

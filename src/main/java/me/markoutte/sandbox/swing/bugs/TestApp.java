@@ -3,10 +3,6 @@ package me.markoutte.sandbox.swing.bugs;
 import javax.swing.*;
 import java.awt.*;
 
-/**
- * @author Maksim Pelevin <maks.pelevin@oogis.ru>
- * @since 2015-11-17
- */
 public class TestApp {
 
     private final JFrame frame;

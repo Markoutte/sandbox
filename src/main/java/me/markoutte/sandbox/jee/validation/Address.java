@@ -2,10 +2,6 @@ package me.markoutte.sandbox.jee.validation;
 
 import javax.validation.constraints.NotNull;
 
-/**
- * @author Maksim Pelevin <maks.pelevin@oogis.ru>
- * @since 2016-03-31
- */
 public class Address {
 
     @NotNull

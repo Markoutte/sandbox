@@ -5,10 +5,6 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 
-/**
- * @author Maksim Pelevin <maks.pelevin@oogis.ru>
- * @since 2016-02-10
- */
 public class HibernateConnectToDatabase {
 
     public static void main(String[] args) {

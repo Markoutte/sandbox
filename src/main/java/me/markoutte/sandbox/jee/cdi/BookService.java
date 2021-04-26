@@ -2,10 +2,6 @@ package me.markoutte.sandbox.jee.cdi;
 
 import javax.inject.Inject;
 
-/**
- * @author Maksim Pelevin <maks.pelevin@oogis.ru>
- * @since 2016-03-23
- */
 @Loggable
 public class BookService {
 

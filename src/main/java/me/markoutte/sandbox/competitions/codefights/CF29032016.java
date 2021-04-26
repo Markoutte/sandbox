@@ -8,9 +8,6 @@ import java.util.Stack;
  * Let's call a Binary string a Beautiful Binary string, if it is possible to connect pairs of equal letter with lines above the string so that no two lines intersect and each character is connected to exactly one other character.
  *
  * Given a Binary string, determine if it is Beautiful.
- *
- * @author Maksim Pelevin <maks.pelevin@oogis.ru>
- * @since 2016-03-29
  */
 public class CF29032016 {
 
