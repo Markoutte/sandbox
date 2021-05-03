@@ -27,6 +27,7 @@ dependencies {
     implementation("com.intellij:annotations:12.0")
     implementation("org.openjdk.jmh:jmh-core:1.29")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2")
+    implementation("net.java.dev.jna:jna-platform:5.8.0")
     testImplementation("junit:junit:4.13")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:1.4.32")
     compileOnly("org.openjdk.jmh:jmh-generator-annprocess:1.29")

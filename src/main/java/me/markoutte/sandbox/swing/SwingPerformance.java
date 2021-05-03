@@ -1,6 +1,7 @@
 package me.markoutte.sandbox.swing;
 
 import me.markoutte.sandbox.swing.monsters.EventCounter;
+import me.markoutte.sandbox.swing.monsters.WinMM;
 
 import javax.swing.*;
 import java.awt.*;
@@ -57,14 +58,7 @@ public class SwingPerformance {
     public static void windowsTimerHack() {
         final String os = System.getProperty("os.name");
         if (os != null && os.startsWith("Windows")) {
-            Thread t = new Thread(() -> {
-                try {
-                    Thread.sleep(Long.MAX_VALUE);
-                } catch (InterruptedException ignored) {
-                }
-            });
-            t.setDaemon(true);
-            t.start();
+            WinMM.begin(1);
         }
     }
 
