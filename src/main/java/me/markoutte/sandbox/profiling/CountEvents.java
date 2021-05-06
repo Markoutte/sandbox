@@ -1,51 +1,42 @@
 package me.markoutte.sandbox.profiling;
 
+import org.openjdk.jmh.infra.Blackhole;
+
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.LockSupport;
 
 /**
  * This example shows why algorithms are useful.
  */
-@SuppressWarnings("CommentedOutCode")
 public class CountEvents {
 
-    public static int update(Collection<Long> events, long nanos, long interval) {
+    public static int update(Deque<Long> events, long nanos, long interval) {
         events.add(nanos);
         // we can remove values like this
-        events.removeIf(aTime -> aTime < nanos - interval);
-//        // but it is faster than that
-//        Iterator<Long> iterator = events.iterator();
-//        while (iterator.hasNext()) {
-//            Long aTime = iterator.next();
-//            if (aTime < nanos - interval) {
-//                iterator.remove();
-//            } else {
-//                break;
-//            }
-//        }
+//        events.removeIf(aTime -> aTime < nanos - interval);
+
+        //noinspection ConstantConditions
+        while (events.peekFirst() < nanos - interval) {
+            events.removeFirst();
+        }
         return events.size();
     }
 
     public static void main(String[] args) {
-        ExecutorService service = Executors.newSingleThreadExecutor();
-        service.execute(() -> {
-            long interval = TimeUnit.SECONDS.toNanos(1);
-            int[] count = new int[(int) TimeUnit.MILLISECONDS.toNanos(1)];
-            var counter = 0;
-            long start = System.nanoTime();
-            // usually ArrayList is used, but ArrayDeque is pretty good
-            Collection<Long> collection = new ArrayList<>();//new ArrayDeque<>();
-            while (counter < count.length) {
-                LockSupport.parkNanos(1);
-                count[counter++] = update(collection, System.nanoTime(), interval);
-            }
-            //noinspection OptionalGetWithoutIsPresent
-            System.out.println("Avg count: " + Arrays.stream(count).average().getAsDouble());
-            System.out.println("Time spent: " + TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start) + " ms");
-            service.shutdown();
-        });
+        long start = System.nanoTime();
+        int total = 100_000;
+        long interval = TimeUnit.MILLISECONDS.toNanos(100);
+        int[] count = new int[total];
+        // usually ArrayList is used, but ArrayDeque is pretty good
+        Deque<Long> collection = new ArrayDeque<>();
+        for (int counter = 0; counter < count.length; counter++) {
+            count[counter] = update(collection, System.nanoTime(), interval);
+            // https://shipilev.net/blog/2014/nanotrusting-nanotime/
+            Blackhole.consumeCPU(1000);
+        }
+        long spent = System.nanoTime() - start;
+        //noinspection OptionalGetWithoutIsPresent
+        System.out.println("Average count: " + (int) (Arrays.stream(count).average().getAsDouble()) + " op");
+        System.out.println("Spent time: " + TimeUnit.NANOSECONDS.toMillis(spent) + " ms");
     }
 }
