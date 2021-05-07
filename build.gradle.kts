@@ -8,6 +8,8 @@ plugins {
     java
     kotlin("jvm") version "1.4.32"
     id("org.jetbrains.compose") version "0.4.0-build183"
+    id("org.springframework.boot") version "2.4.3"
+    id("io.spring.dependency-management") version "1.0.11.RELEASE"
 }
 
 repositories {
@@ -20,7 +22,11 @@ dependencies {
     implementation("org.hibernate:hibernate-core:5.4.30.Final")
     implementation("com.h2database:h2:1.4.200")
     implementation("com.google.inject:guice:4.0")
-    implementation("org.jboss.weld.se:weld-se:2.0.2.Final")
+    implementation("javax.enterprise:cdi-api:2.0")
+    implementation("org.jboss.weld.se:weld-se-core:4.0.1.Final")
+    implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
+    implementation("org.springframework.boot:spring-boot-starter-web")
+    developmentOnly("org.springframework.boot:spring-boot-devtools")
     implementation("org.hibernate:hibernate-validator:5.0.0.Final")
     implementation("javassist:javassist:3.12.1.GA")
     implementation("commons-cli:commons-cli:1.3.1")
@@ -31,6 +37,7 @@ dependencies {
     testImplementation("junit:junit:4.13")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:1.4.32")
     compileOnly("org.openjdk.jmh:jmh-generator-annprocess:1.29")
+    compile("org.springframework.boot:spring-boot-starter-webflux")
 }
 
 java.sourceCompatibility = JavaVersion.VERSION_11
