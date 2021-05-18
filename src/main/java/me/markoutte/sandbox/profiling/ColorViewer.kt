@@ -1,6 +1,7 @@
 package me.markoutte.sandbox.profiling
 
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import me.markoutte.sandbox.swing.SwingExample
 import me.markoutte.sandbox.swing.monsters.EventCounter
@@ -18,6 +19,7 @@ class MyPanel : JComponent() {
 
     private val colors: Array<MyColor> = Array(256 * 256) { i ->
         MyColor {
+            Blackhole.consumeCPU(600)
             Color.getHSBColor(
                 hue / 256f,
                 (i % 256) / 256f,
@@ -28,7 +30,6 @@ class MyPanel : JComponent() {
 
     class MyColor(val producer: () -> Color) : Color(0) {
         override fun getRGB(): Int {
-            Blackhole.consumeCPU(600)
             return producer().rgb
         }
     }
@@ -98,6 +99,7 @@ fun main() {
     GlobalScope.launch {
         @Suppress("BlockingMethodInNonBlockingContext")
         while (true) {
+            delay(1)
             SwingUtilities.invokeAndWait {
                 panel.paintImmediately(panel.visibleRect)
             }

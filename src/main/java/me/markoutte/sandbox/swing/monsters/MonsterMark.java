@@ -31,14 +31,14 @@ public class MonsterMark {
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
-            final Painter.Policy policy = Painter.Policy.VSYNC_DRIVEN;
+            final Painter.Policy policy = Painter.Policy.TIMER_DRIVEN;
             switch (policy) {
+                //noinspection ConstantConditions
                 case TIMER_DRIVEN:
                     SwingPerformance.windowsTimerHack();
                     break;
                 // must be called before AWT is initialized
                 // see javax.swing.BufferStrategyPaintManager
-                //noinspection ConstantConditions
                 case VSYNC_DRIVEN:
 //                System.setProperty("sun.java2d.opengl", "true");
                     System.setProperty("swing.bufferPerWindow", "true");
@@ -70,6 +70,7 @@ public class MonsterMark {
         private int requestNew = 0;
         private long time = System.nanoTime();
         private final long nanos = TimeUnit.SECONDS.toNanos(1);
+        @SuppressWarnings("FieldCanBeLocal")
         private final int px = 50; // pixels per second
         private final JLabel info = new JLabel();
         private final @NotNull Policy updatePolicy;
