@@ -2,10 +2,9 @@ package me.markoutte.sandbox.profiling;
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayDeque;
-import java.util.Arrays;
-import java.util.Deque;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -16,21 +15,38 @@ public class CountEvents {
     // enable -XX:TieredStopAtLevel=0
     public static void main(String[] args) throws IOException {
         var path = Paths.get("dir");
+        var allFolders = new ArrayList<Path>(100_000);
+        String[] subFolders = {"a", "b", "c", "d", "e", "f", "g", "h", "i", "j"};
+        addFoldersRecursively(path, subFolders, 5, allFolders);
+        int[] count = new int[allFolders.size()];
         long start = System.nanoTime();
-        int total = 100_000;
-        long interval = TimeUnit.MILLISECONDS.toNanos(100);
-        int[] count = new int[total];
-        Counter fps = new DequeCounter(interval);
+        Counter fps = new DequeCounter(TimeUnit.MILLISECONDS.toNanos(1000));
         for (int counter = 0; counter < count.length; counter++) {
             count[counter] = fps.update();
-//            if (!Files.exists(path)) {
-                Files.createDirectories(path);
-//            }
+            Files.createDirectories(allFolders.get(counter));
         }
         long spent = System.nanoTime() - start;
         //noinspection OptionalGetWithoutIsPresent
         System.out.println("Average count: " + (int) (Arrays.stream(count).average().getAsDouble()) + " op");
         System.out.println("Spent time: " + TimeUnit.NANOSECONDS.toMillis(spent) + " ms");
+    }
+
+    @SuppressWarnings({"RedundantThrows", "CommentedOutCode"})
+    private static void addFoldersRecursively(Path parent, String[] folders, int level, List<Path> result) throws IOException {
+        if (level < 0) {
+            throw new IllegalArgumentException();
+        }
+        if (level == 0) {
+            result.add(parent);
+            return;
+        }
+        for (String folder : folders) {
+            var path = parent.resolve(folder);
+            addFoldersRecursively(path, folders, level - 1, result);
+//            if (Files.exists(path)) {
+//                Files.delete(path);
+//            }
+        }
     }
 
     private interface Counter {
