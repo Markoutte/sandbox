@@ -1,6 +1,5 @@
 package me.markoutte.sandbox.swing.monsters
 
-import androidx.compose.desktop.Window
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -19,13 +18,15 @@ import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
-import org.jetbrains.skija.Image
-import org.jetbrains.skija.Rect
+import androidx.compose.ui.window.WindowState
+import androidx.compose.ui.window.singleWindowApplication
+import org.jetbrains.skia.Rect
+import org.jetbrains.skia.Image
 import java.util.concurrent.TimeUnit
 import kotlin.math.roundToLong
 import kotlin.random.Random
 
-fun main() = Window(title = "Monsters Compose", size = IntSize(640, 480)) {
+fun main() = singleWindowApplication(title = "Monsters Compose", state = WindowState(width = 640.dp, height = 480.dp)) {
 
     val state = remember { GameState() }
     val scope = currentRecomposeScope
