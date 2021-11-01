@@ -6,6 +6,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 /**
  * This example shows why algorithms are useful.
@@ -15,38 +19,21 @@ public class CountEvents {
     // enable -XX:TieredStopAtLevel=0
     public static void main(String[] args) throws IOException {
         var path = Paths.get("dir");
-        var allFolders = new ArrayList<Path>(100_000);
-        String[] subFolders = {"a", "b", "c", "d", "e", "f", "g", "h", "i", "j"};
-        addFoldersRecursively(path, subFolders, 5, allFolders);
-        int[] count = new int[allFolders.size()];
-        long start = System.nanoTime();
+        var paths = generateNames("abcdefghij", 5)
+                .map(path::resolve)
+//                .peek(CountEvents::deletePath)
+                .collect(Collectors.toList());
+        var count = new int[paths.size()];
         Counter fps = new DequeCounter(TimeUnit.MILLISECONDS.toNanos(1000));
+        long start = System.nanoTime();
         for (int counter = 0; counter < count.length; counter++) {
             count[counter] = fps.update();
-            Files.createDirectories(allFolders.get(counter));
+            Files.createDirectories(paths.get(counter));
         }
         long spent = System.nanoTime() - start;
         //noinspection OptionalGetWithoutIsPresent
         System.out.println("Average count: " + (int) (Arrays.stream(count).average().getAsDouble()) + " op");
         System.out.println("Spent time: " + TimeUnit.NANOSECONDS.toMillis(spent) + " ms");
-    }
-
-    @SuppressWarnings({"RedundantThrows", "CommentedOutCode"})
-    private static void addFoldersRecursively(Path parent, String[] folders, int level, List<Path> result) throws IOException {
-        if (level < 0) {
-            throw new IllegalArgumentException();
-        }
-        if (level == 0) {
-            result.add(parent);
-            return;
-        }
-        for (String folder : folders) {
-            var path = parent.resolve(folder);
-            addFoldersRecursively(path, folders, level - 1, result);
-//            if (Files.exists(path)) {
-//                Files.delete(path);
-//            }
-        }
     }
 
     private interface Counter {
@@ -113,5 +100,56 @@ public class CountEvents {
             return frames;
         }
 
+    }
+
+    @SuppressWarnings("SameParameterValue")
+    private static Stream<String> generateNames(String alphabet, int length) {
+        var spliterator = new Spliterator<String>() {
+
+            final char[] chars = alphabet.toCharArray();
+            final int combinations = (int) Math.pow(chars.length, length);
+            final char[] tmp = new char[length];
+            int i = 0;
+
+            @Override
+            public boolean tryAdvance(Consumer<? super String> action) {
+                if (i < combinations) {
+                    int d = i;
+                    for (int k = length - 1; k >= 0; k--) {
+                        int r = d % chars.length;
+                        d /= chars.length;
+                        tmp[k] = chars[r];
+                    }
+                    i++;
+                    action.accept(new String(tmp));
+                    return true;
+                }
+                return false;
+            }
+
+            @Override
+            public Spliterator<String> trySplit() {
+                return null;
+            }
+
+            @Override
+            public long estimateSize() {
+                return combinations;
+            }
+
+            @Override
+            public int characteristics() {
+                return Spliterator.ORDERED | Spliterator.DISTINCT | Spliterator.IMMUTABLE;
+            }
+        };
+
+        return StreamSupport.stream(spliterator, true);
+    }
+
+    @SuppressWarnings("unused")
+    private static void deletePath(Path path) {
+        try {
+            Files.deleteIfExists(path);
+        } catch (IOException ignore) {}
     }
 }
