@@ -80,7 +80,14 @@ public class MonsterMark {
         public Painter(Policy updatePolicy) {
             this.updatePolicy = updatePolicy;
             if (updatePolicy == Policy.TIMER_DRIVEN) {
-                Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(this::schedule, 0, 500, TimeUnit.MICROSECONDS);
+                var executor = Executors.newSingleThreadScheduledExecutor();
+                executor.schedule(new Runnable() {
+                    @Override
+                    public void run() {
+                        schedule();
+                        executor.schedule(this, 1000, TimeUnit.MICROSECONDS);
+                    }
+                }, 1000, TimeUnit.MICROSECONDS);
             }
 
             setOpaque(true);
