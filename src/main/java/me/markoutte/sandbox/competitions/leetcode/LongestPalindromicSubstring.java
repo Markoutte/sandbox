@@ -35,12 +35,28 @@ public class LongestPalindromicSubstring {
         return s.substring(li, lj + 1);
     }
 
+    // optimized naive implementation
+    public static String longestPalindromeOptimized(String s) {
+        char[] chars = s.toCharArray();
+        // 0. consider whole string as a substring
+        // 1. check if substring is a palindrome; if yes then return it
+        // 2. if last character of substring is not the last character of the string then move substring to the right
+        // 2.1. else decrease substring length by 1, place it to the string start and go to 1.
+        // 
+        // There's at least 1 palindrome for non-empty string
+        for (int length = chars.length; length > 0; length--) {
+            for (int i = 0; i < chars.length - length + 1; i++) {
+                if (isPalindrome(chars, i, length + i)) {
+                    return new String(Arrays.copyOfRange(chars, i, length + i));
+                }
+            }
+        }
+        return null;
+    }
+
     // naive implementation
     public static String longestPalindromeNaive(String s) {
         char[] chars = s.toCharArray();
-        if (isPalindrome(chars, 0, chars.length)) {
-            return s;
-        }
         int li = 0, lj = 0;
 
         for (int i = 0; i < chars.length; i++) {
