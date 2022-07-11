@@ -43,6 +43,7 @@ dependencies {
     testImplementation("junit:junit:4.13")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:1.4.32")
     compileOnly("org.openjdk.jmh:jmh-generator-annprocess:1.29")
+    implementation("com.formdev:flatlaf:2.3")
 }
 
 java.sourceCompatibility = JavaVersion.VERSION_11

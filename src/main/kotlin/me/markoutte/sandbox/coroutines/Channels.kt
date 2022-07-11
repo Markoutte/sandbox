@@ -1,16 +1,16 @@
 package me.markoutte.sandbox.coroutines
 
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import java.util.*
 
-suspend fun main() {
+fun main() = runBlocking {
     val channel = Channel<Int>()
 
-    GlobalScope.launch {
+    launch {
         repeat(1000) {
             delay(20)
             channel.send(it)

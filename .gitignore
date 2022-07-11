@@ -65,4 +65,6 @@ gradle/
 gradlew
 gradlew.bat
 .gradle/
+bin/
+.DS_Store
 
