@@ -26,6 +26,11 @@ public class SortingTest {
     }
 
     @Test
+    public void binaryInsertionSort() {
+        check(new BinaryInsertionSorting());
+    }
+
+    @Test
     public void selectionSort() {
         check(new SelectionSorting());
     }

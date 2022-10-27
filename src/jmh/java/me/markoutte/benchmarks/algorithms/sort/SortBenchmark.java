@@ -1,4 +1,4 @@
-package me.markoutte.benchmark.algorithms.sort;
+package me.markoutte.benchmarks.algorithms.sort;
 
 import me.markoutte.sandbox.algorithms.sort.*;
 import org.openjdk.jmh.annotations.*;
@@ -24,6 +24,12 @@ public class SortBenchmark {
     @Benchmark
     public void insertionSort() {
         Sorting sorting = new InsertionSorting();
+        sorting.sort(Arrays.copyOf(origin, origin.length));
+    }
+
+    @Benchmark
+    public void binaryInsertionSort() {
+        Sorting sorting = new BinaryInsertionSorting();
         sorting.sort(Arrays.copyOf(origin, origin.length));
     }
 
