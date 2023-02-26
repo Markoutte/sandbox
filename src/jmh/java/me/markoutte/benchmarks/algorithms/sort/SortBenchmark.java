@@ -22,6 +22,11 @@ public class SortBenchmark {
     }
 
     @Benchmark
+    public void defaultSort() {
+        Arrays.sort(Arrays.copyOf(origin, origin.length));
+    }
+    
+    @Benchmark
     public void insertionSort() {
         Sorting sorting = new InsertionSorting();
         sorting.sort(Arrays.copyOf(origin, origin.length));
