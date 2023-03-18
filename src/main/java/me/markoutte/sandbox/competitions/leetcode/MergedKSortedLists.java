@@ -2,8 +2,48 @@ package me.markoutte.sandbox.competitions.leetcode;
 
 import java.util.*;
 
+/**
+ * You are given an array of k linked-lists lists, each linked-list is sorted in ascending order.
+ * <p>
+ * Merge all the linked-lists into one sorted linked-list and return it.
+ * <p>
+ * <b>Example 1:</b>
+ *
+ * <pre>
+ * Input: lists = [[1,4,5],[1,3,4],[2,6]]
+ * Output: [1,1,2,3,4,4,5,6]
+ * Explanation: The linked-lists are:
+ * [
+ *   1->4->5,
+ *   1->3->4,
+ *   2->6
+ * ]
+ * merging them into one sorted list:
+ * 1->1->2->3->4->4->5->6
+ * </pre>
+ * 
+ * <b>Example 2:</b>
+ *
+ * <pre>
+ * Input: lists = []
+ * Output: []
+ * Example 3:
+ *
+ * Input: lists = [[]]
+ * Output: []
+ *</pre>
+ *
+ * <b>Constraints:</b>
+ * <pre>
+ * k == lists.length
+ * 0 <= k <= 104
+ * 0 <= lists[i].length <= 500
+ * -104 <= lists[i][j] <= 104
+ * lists[i] is sorted in ascending order.
+ * The sum of lists[i].length will not exceed 104.
+ * </pre>
+ */
 public class MergedKSortedLists {
-
     public static ListNode usePriorityQueue(ListNode[] lists) {
         class IntBinaryHeap {
             private final ListNode[] heap;
