@@ -1,21 +1,26 @@
 package me.markoutte.sandbox.algorithms.sort;
 
-import org.junit.*;
-import org.junit.rules.Stopwatch;
-import org.junit.runner.Description;
-import org.junit.runners.MethodSorters;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.AfterEachCallback;
+import org.junit.jupiter.api.extension.BeforeEachCallback;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.extension.ExtensionContext;
 
+import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+@ExtendWith(SortingTest.TimingExtension.class)
 public class SortingTest {
 
-    private static final int[] input = Sequence.RANDOM.generate();
+    private static final int[] input = Sequence.SIMPLE.generate();
     private static final int[] expected = Arrays.copyOf(input, input.length);
     private int[] output;
 
-    @BeforeClass
+    @BeforeAll
     public static void initialize() {
         Arrays.sort(expected);
     }
@@ -64,7 +69,7 @@ public class SortingTest {
         output = Arrays.copyOf(input, input.length);
         sorting.sort(output);
         for (int i = 0; i < input.length; i++) {
-            Assert.assertEquals(expected[i], output[i]);
+            assertEquals(expected[i], output[i]);
         }
     }
 
@@ -105,19 +110,31 @@ public class SortingTest {
         public abstract int[] generate();
     }
 
-    @Rule
-    public Stopwatch stopwatch = new Stopwatch() {
+    public static class TimingExtension implements BeforeEachCallback, AfterEachCallback {
+        
+        private long start;
+        
         @Override
-        protected void finished(long nanos, Description description) {
-            System.out.printf("%s (%d μs): %s -> %s%n",
-                    description.getMethodName().replace("Sort", ""),
-                    TimeUnit.NANOSECONDS.toMicros(nanos),
-                    arrayToString(input), arrayToString(output));
+        public void beforeEach(ExtensionContext context) {
+            start = System.nanoTime();
+        }
+
+        @Override
+        public void afterEach(ExtensionContext context) {
+            long nanos = System.nanoTime() - start;
+            Method testMethod = context.getTestMethod().orElseThrow();
+            if (context.getTestInstance().orElseThrow() instanceof SortingTest test) {
+                System.out.printf("%s (%d μs): %s -> %s%n",
+                        testMethod.getName().replace("Sort", ""),
+                        TimeUnit.NANOSECONDS.toMicros(nanos),
+                        arrayToString(input), arrayToString(test.output));
+            }
         }
 
         private String arrayToString(int[] array) {
             return input.length > 1_000 ? "[...]" : Arrays.toString(array);
         }
-    };
+    }
+    
 
 }

@@ -1,13 +1,12 @@
 package me.markoutte.sandbox.math;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.awt.geom.Point2D;
 import java.util.*;
 
-import static java.lang.Math.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Right the math, that calculates two lines intersection with 3 points known.
@@ -54,7 +53,7 @@ public class LineCalcTest {
 
     private Map<List<Point2D>, Point2D> hugeSet = new LinkedHashMap<>();
 
-    @Before
+    @BeforeEach
     public void setUp() {
         hugeSet.put(set1, new Point2D.Double(5.5, 5.5));
         hugeSet.put(set2, new Point2D.Double(5, 0));
@@ -73,8 +72,8 @@ public class LineCalcTest {
                     entry.getKey().get(1),
                     entry.getKey().get(2)
             );
-            Assert.assertEquals(entry.getValue().getX(), result.getX(), 0);
-            Assert.assertEquals(entry.getValue().getY(), result.getY(), 0);
+            assertEquals(entry.getValue().getX(), result.getX(), 0);
+            assertEquals(entry.getValue().getY(), result.getY(), 0);
         }
     }
 

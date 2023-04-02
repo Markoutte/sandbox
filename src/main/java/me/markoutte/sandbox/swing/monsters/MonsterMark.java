@@ -2,10 +2,10 @@ package me.markoutte.sandbox.swing.monsters;
 
 import me.markoutte.sandbox.swing.SwingExample;
 import me.markoutte.sandbox.swing.SwingPerformance;
+import org.jetbrains.annotations.NotNull;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
-import javax.validation.constraints.NotNull;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;

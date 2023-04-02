@@ -1,7 +1,8 @@
 package me.markoutte.sandbox.algorithms.strings;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class StringTest {
 
@@ -17,26 +18,26 @@ public class StringTest {
 
     @Test
     public void javaStringSearch() {
-        Assert.assertEquals(result, string.indexOf(pattern));
+        assertEquals(result, string.indexOf(pattern));
     }
 
     @Test
     public void naiveStringSearch() {
-        Assert.assertEquals(result, new NaiveSearch().find(pattern, string));
+        assertEquals(result, new NaiveSearch().find(pattern, string));
     }
 
     @Test
     public void boyerMooreSearch() {
-        Assert.assertEquals(result, new BoyerMooreSearch().find(pattern, string));
+        assertEquals(result, new BoyerMooreSearch().find(pattern, string));
     }
 
     @Test
     public void knuthMorrisPrattSearch() {
-        Assert.assertEquals(result, new KnuthMorrisPrattSearch().find(pattern, string));
+        assertEquals(result, new KnuthMorrisPrattSearch().find(pattern, string));
     }
 
     @Test
     public void rabinKarpSearch() {
-        Assert.assertEquals(result, new RabinKarpSearch().find(pattern, string));
+        assertEquals(result, new RabinKarpSearch().find(pattern, string));
     }
 }
