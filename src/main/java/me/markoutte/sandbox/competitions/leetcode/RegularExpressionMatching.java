@@ -51,20 +51,27 @@ public class RegularExpressionMatching {
 //        System.out.println(isMatch("aa", "a")); // false
 //        System.out.println(isMatch("aa", "a*")); // true
 //        System.out.println(isMatch("ab", ".*")); // true
-        System.out.println(isMatch("aaba", "ab*a*c*a")); // true
-//        System.out.println(isMatch("asb", "asb"));
-//        System.out.println(isMatch("asb", "avb"));
-//        System.out.println(isMatch("asb", "a.b"));
-//        System.out.println(isMatch("abc", ".*c"));
-//        System.out.println(isMatch("abc", ".*"));
-//        System.out.println(isMatch("abfec", "a.*c"));
-//        System.out.println(isMatch("helloworldandme", "hel*o.*and.*"));
+//        System.out.println(isMatch("aaba", "ab*a*c*a")); // false
+//        System.out.println(isMatch("asb", "asb")); // true
+//        System.out.println(isMatch("asb", "avb")); // false
+//        System.out.println(isMatch("asb", "a.b")); // true
+//        System.out.println(isMatch("abc", ".*c")); // true
+//        System.out.println(isMatch("abc", ".*")); // true
+//        System.out.println(isMatch("abfec", "a.*c")); // true
+//        System.out.println(isMatch("helloworldandme", "hel*o.*and.*")); // true
+        System.out.println(isMatch("bbaa", "a...")); // true
     }
 
-    private static char[] alphabet = IntStream.range('a', 'z' + 1)
+    private static final char EPS = (char) 0;
+    
+    private static final char[] alphabet = IntStream.range('a', 'z' + 1)
             .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
             .toString()
             .toCharArray();
+    private static final char[] alphabetWithEps = new char[alphabet.length + 1]; static {
+        alphabetWithEps[0] = EPS;
+        System.arraycopy(alphabet, 0, alphabetWithEps, 1, alphabet.length);
+    }
     
     public static boolean isMatch(String s, String p) {
         char[] symbols = p.toCharArray();
@@ -77,11 +84,11 @@ public class RegularExpressionMatching {
         for (int i = 0; i < symbols.length; i++) {
             // states[i] means 'previous'
             if (symbols[i] == '*') {
-                // when * is met we need to get previous state and merge it with previous of this previous
-                states[i - 1].addSuccessor(symbols[i - 1], states[i - 1]);
+                states[i + 1] = new Q();
                 states[i - 1].removeSuccessor(symbols[i - 1], states[i]);
                 states[i] = null;
-                states[i + 1] = states[i - 1];
+                states[i - 1].addSuccessor(symbols[i - 1], states[i - 1]);
+                states[i - 1].addSuccessor(EPS, states[i + 1]);
             } else {
                 states[i + 1] = new Q();
                 states[i].addSuccessor(symbols[i], states[i + 1]);
@@ -90,37 +97,41 @@ public class RegularExpressionMatching {
         
         System.out.println(states[0]);
 //        // If current is DFA (without * and .) this check should work
-//        Q current = states[0];
+//        Q<Q> qurrent = states[0];
 //        for (char c : s.toCharArray()) {
 //            //
-//            current = current.successors(c).stream().findFirst().orElse(null);
-//            if (current == null) {
+//            qurrent = qurrent.successors(c).stream().findFirst().orElse(null);
+//            if (qurrent == null) {
 //                return false;
 //            }
 //        }
-//        return current == states[states.length - 1];
+//        if (true) {
+//            return qurrent == states[states.length - 1];
+//        }
 
         // NFA -> DFA
         Queue<S> queue = new ArrayDeque<>();
         S s0 = new S(states[0]);
+        s0.eps();
         queue.offer(s0);
         Set<S> visited = new HashSet<>();
-
+        
         while (!queue.isEmpty()) {
             final S current = queue.poll();
             visited.add(current);
             for (char symbol : alphabet) {
                 final S aNew = new S();
-                // add already seen
                 for (Q q : current.getStates()) {
-                    Set<Q<S>> successors = q.successors(symbol);
+                    Set<Q> successors = q.successors(symbol);
                     aNew.addStates(successors);
                 }
+                aNew.eps();
                 // magic: find the same node in visited to reuse it
                 final S anOld = visited.stream().filter(n -> {
                     if (n.getStates().size() != aNew.getStates().size()) return false;
                     return n.containsAll(aNew.getStates());
                 }).findFirst().orElse(aNew);
+                
                 current.addSuccessor(symbol, anOld);
                 if (!anOld.getStates().isEmpty() && !visited.contains(anOld)) {
                     queue.offer(anOld);
@@ -144,11 +155,11 @@ public class RegularExpressionMatching {
 
         return current.getStates().contains(states[states.length - 1]);
     }
-
+    
     /**
      * State of a deterministic finite automation (DFA).
      */
-    private static class Q<T extends Q> {
+    private abstract static class N<T extends N> {
         private static final AtomicLong g = new AtomicLong();
         @SuppressWarnings("unused")
         protected final long idForDebug = g.getAndIncrement();
@@ -168,7 +179,7 @@ public class RegularExpressionMatching {
             }
         }
 
-        public void removeSuccessor(char symbol, Q removed) {
+        public void removeSuccessor(char symbol, T removed) {
             if (symbol == '.') {
                 for (int i = 0; i < alphabet.length; i++) {
                     removeSuccessor(alphabet[i], removed);
@@ -183,7 +194,7 @@ public class RegularExpressionMatching {
             return toString(0, new HashSet<>());
         }
 
-        protected String toString(int indent, Set<Q> alreadyPrinted) {
+        protected String toString(int indent, Set<N<T>> alreadyPrinted) {
             alreadyPrinted.add(this);
             String indentation = "\t".repeat(indent);
             List<Character> symbols = new ArrayList<>(successors.keySet());
@@ -204,49 +215,62 @@ public class RegularExpressionMatching {
             return builder.toString();
         }
 
+        public abstract String nodeName();
+    }
+
+    private static final class Q extends N<Q> {
         public String nodeName() {
             return "q%d:".formatted(idForDebug);
         }
-    }
-
+    } 
+    
     /**
      * State of a nondeterministic finite automation (NFA).
      */
-    private static final class S extends Q<S> {
+    private static final class S extends N<S> {
 
-        private final Set<Q<S>> states = new HashSet<>();
+        private final Set<Q> states = new HashSet<>();
 
         public S() {
         }
 
-        public S(Q<S>... states) {
+        public S(Q... states) {
             //noinspection UseBulkOperation
             Arrays.stream(states).forEach(this.states::add);
         }
 
-        public void add(Q<S> state) {
+        public void add(Q state) {
             states.add(state);
         }
 
-        public void remove(Q<S> state) {
+        public void remove(Q state) {
             states.remove(state);
         }
 
-        public java.util.Collection<Q<S>> getStates() {
+        public java.util.Collection<Q> getStates() {
             return Collections.unmodifiableCollection(states);
         }
 
-        public void addStates(java.util.Collection<Q<S>> states) {
+        public void addStates(java.util.Collection<Q> states) {
             this.states.addAll(states);
         }
 
-        public boolean containsAll(java.util.Collection<Q<S>> states) {
+        public boolean containsAll(java.util.Collection<Q> states) {
             return this.states.containsAll(states);
+        }
+
+        public void eps() {
+            Queue<Q> e = new ArrayDeque<>(this.states);
+            while (!e.isEmpty()) {
+                Set<Q> epsClosure = e.poll().successors(EPS);
+                addStates(epsClosure);
+                e.addAll(epsClosure);
+            }
         }
 
         @Override
         public String nodeName() {
-            return "q%d:".formatted(idForDebug);
+            return "s%d:".formatted(idForDebug);
         }
     }
 }
