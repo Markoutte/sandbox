@@ -59,7 +59,8 @@ public class RegularExpressionMatching {
 //        System.out.println(isMatch("abc", ".*")); // true
 //        System.out.println(isMatch("abfec", "a.*c")); // true
 //        System.out.println(isMatch("helloworldandme", "hel*o.*and.*")); // true
-        System.out.println(isMatch("bbaa", "a...")); // true
+//        System.out.println(isMatch("abaa", "a.a.")); // true
+        System.out.println(isMatch("babbcabcaabbbacaca", "bb*.c*.c*b*b.*c")); // false
     }
 
     private static final char EPS = (char) 0;
@@ -95,7 +96,7 @@ public class RegularExpressionMatching {
             }
         }
         
-        System.out.println(states[0]);
+//        System.out.println(states[0]);
 //        // If current is DFA (without * and .) this check should work
 //        Q<Q> qurrent = states[0];
 //        for (char c : s.toCharArray()) {
@@ -119,11 +120,10 @@ public class RegularExpressionMatching {
         while (!queue.isEmpty()) {
             final S current = queue.poll();
             visited.add(current);
-            for (char symbol : alphabet) {
+            for (char symbol : current.symbols()) {
                 final S aNew = new S();
                 for (Q q : current.getStates()) {
-                    Set<Q> successors = q.successors(symbol);
-                    aNew.addStates(successors);
+                    aNew.addStates(q.successors(symbol));
                 }
                 aNew.eps();
                 // magic: find the same node in visited to reuse it
@@ -166,27 +166,30 @@ public class RegularExpressionMatching {
         private final Map<Character, Set<T>> successors = new HashMap<>();
 
         public Set<T> successors(char symbol) {
-            return Collections.unmodifiableSet(successors.getOrDefault(symbol, Collections.emptySet()));
+            if (successors.containsKey('.') && symbol != EPS) {
+                Set<T> result = new HashSet<>(successors.get('.'));
+                result.addAll(successors.getOrDefault(symbol, Collections.emptySet()));
+                return result;
+            } else {
+                return Collections.unmodifiableSet(successors.getOrDefault(symbol, Collections.emptySet()));
+            }
         }
 
         public void addSuccessor(char symbol, T next) {
-            if (symbol == '.') {
-                for (int i = 0; i < alphabet.length; i++) {
-                    addSuccessor(alphabet[i], next);
-                }
-            } else {
-                successors.computeIfAbsent(symbol, character -> new HashSet<>()).add(next);
-            }
+            successors.computeIfAbsent(symbol, character -> new HashSet<>()).add(next);
         }
 
         public void removeSuccessor(char symbol, T removed) {
-            if (symbol == '.') {
-                for (int i = 0; i < alphabet.length; i++) {
-                    removeSuccessor(alphabet[i], removed);
-                }
-            } else {
-                successors.computeIfAbsent(symbol, character -> new HashSet<>()).remove(removed);
+            successors.computeIfAbsent(symbol, character -> new HashSet<>()).remove(removed);
+        }
+
+        public char[] symbols() {
+            char[] symbols = new char[successors.size()];
+            int i = 0;
+            for (Character character : successors.keySet()) {
+                symbols[i++] = character;
             }
+            return symbols;
         }
 
         @Override
@@ -257,6 +260,25 @@ public class RegularExpressionMatching {
 
         public boolean containsAll(java.util.Collection<Q> states) {
             return this.states.containsAll(states);
+        }
+
+        @Override
+        public char[] symbols() {
+            Set<Character> symbols = new HashSet<>();
+            for (Q state : states) {
+                for (char s : state.symbols()) {
+                    if (s == '.') {
+                        return alphabet;
+                    }
+                    symbols.add(s);
+                }
+            }
+            char[] result = new char[symbols.size()];
+            int i = 0;
+            for (Character symbol : symbols) {
+                result[i++] = symbol;
+            }
+            return result;
         }
 
         public void eps() {
