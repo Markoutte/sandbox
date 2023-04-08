@@ -2,6 +2,7 @@ package me.markoutte.sandbox.competitions.leetcode;
 
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.IntStream;
 
 /**
@@ -47,162 +48,205 @@ import java.util.stream.IntStream;
 public class RegularExpressionMatching {
 
     public static void main(String[] args) {
+//        System.out.println(isMatch("aa", "a")); // false
+//        System.out.println(isMatch("aa", "a*")); // true
+//        System.out.println(isMatch("ab", ".*")); // true
+        System.out.println(isMatch("aaba", "ab*a*c*a")); // true
 //        System.out.println(isMatch("asb", "asb"));
 //        System.out.println(isMatch("asb", "avb"));
 //        System.out.println(isMatch("asb", "a.b"));
-        System.out.println(isMatch("abc", ".*c"));
+//        System.out.println(isMatch("abc", ".*c"));
+//        System.out.println(isMatch("abc", ".*"));
+//        System.out.println(isMatch("abfec", "a.*c"));
+//        System.out.println(isMatch("helloworldandme", "hel*o.*and.*"));
     }
 
+    private static char[] alphabet = IntStream.range('a', 'z' + 1)
+            .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
+            .toString()
+            .toCharArray();
+    
     public static boolean isMatch(String s, String p) {
-        char[] alphabet = new char['z' - 'a' + 1];
-        for (int i = 0; i < alphabet.length; i++) {
-            alphabet[i] = (char) ('a' + i);
+        char[] symbols = p.toCharArray();
+        // We gonna keep the states of NFA in arrays to facilitate initial creation.
+        // Real number of states can be less that total number of symbols,
+        // because of special character '*', but it doesn't matter.
+        // Note that only valid patter is expected (the p like "***" can cause an error).
+        Q[] states = new Q[symbols.length + 1];
+        states[0] = new Q(); // initial state
+        for (int i = 0; i < symbols.length; i++) {
+            // states[i] means 'previous'
+            if (symbols[i] == '*') {
+                // when * is met we need to get previous state and merge it with previous of this previous
+                states[i - 1].addSuccessor(symbols[i - 1], states[i - 1]);
+                states[i - 1].removeSuccessor(symbols[i - 1], states[i]);
+                states[i] = null;
+                states[i + 1] = states[i - 1];
+            } else {
+                states[i + 1] = new Q();
+                states[i].addSuccessor(symbols[i], states[i + 1]);
+            }
         }
-        char[] sChars = s.toCharArray();
-        char[] pChars = p.toCharArray();
-        State prev = null;
-        State start = null;
-        State finite = null;
-        int exitPoll = pChars.length - 1;
-        for (int i = 0; i < pChars.length; i++) {
-            State state = new State(i);
-            if (prev != null) {
-                if (pChars[i - 1] == '*') {
-                    continue;
-                }
-                if (pChars[i - 1] == '.') {
-                    for (char c : alphabet) {
-                        prev.next.computeIfAbsent(c, HashSet::new).add(state);
-                    }
-                } else {
-                    prev.next.computeIfAbsent(pChars[i - 1], HashSet::new).add(state);
-                }
-                if (pChars[i] == '*') {
-                    exitPoll--;
-                    if (pChars[i - 1] == '.') {
-                        for (char c : alphabet) {
-                            prev.next.computeIfAbsent(c, HashSet::new).add(prev);
-                        }
-                    } else {
-                        prev.next.computeIfAbsent(pChars[i - 1], HashSet::new).add(prev);
-                    }
-                }
-            }
-            if (i == 0) {
-                start = state;
-            }
-            if (i == exitPoll) {
-                finite = state;
-            }
-            prev = state;
-        }
-
-        Queue<Node> queue = new ArrayDeque<>();
-        Node startStates = new Node();
-        startStates.add(start);
-        queue.offer(startStates);
-
-        Set<Node> alreadySeen = new HashSet<>();
-        alreadySeen.add(startStates);
         
-        // (current state, char) => {next state, null}
+        System.out.println(states[0]);
+//        // If current is DFA (without * and .) this check should work
+//        Q current = states[0];
+//        for (char c : s.toCharArray()) {
+//            //
+//            current = current.successors(c).stream().findFirst().orElse(null);
+//            if (current == null) {
+//                return false;
+//            }
+//        }
+//        return current == states[states.length - 1];
+
+        // NFA -> DFA
+        Queue<S> queue = new ArrayDeque<>();
+        S s0 = new S(states[0]);
+        queue.offer(s0);
+        Set<S> visited = new HashSet<>();
+
         while (!queue.isEmpty()) {
-            final Node currentNode = queue.poll();
-            alreadySeen.add(currentNode);
-            // currentStates + e-closure
-            for (char a : alphabet) {
-                Node newNode = new Node();
-                for (State currentState : currentNode) {
-                    Set<State> state = currentState.next.get(a);
-                    if (state != null) {
-                        newNode.addAll(state);
-                    }
+            final S current = queue.poll();
+            visited.add(current);
+            for (char symbol : alphabet) {
+                final S aNew = new S();
+                // add already seen
+                for (Q q : current.getStates()) {
+                    Set<Q<S>> successors = q.successors(symbol);
+                    aNew.addStates(successors);
                 }
-                // magic??? if already has that node then replace
-                // newStates = tryReplace(newStates, someCache)
-                var mmm = alreadySeen.stream().filter(n -> {
-                    if (n.size() != newNode.size()) return false;
-                    return n.containsAll(newNode);
-                }).findFirst().orElse(newNode); //todo only 0 or 1 must be found
-                currentNode.next.put(a, mmm);
-                if (!mmm.isEmpty() && !alreadySeen.contains(mmm)) {
-                    queue.offer(mmm);
+                // magic: find the same node in visited to reuse it
+                final S anOld = visited.stream().filter(n -> {
+                    if (n.getStates().size() != aNew.getStates().size()) return false;
+                    return n.containsAll(aNew.getStates());
+                }).findFirst().orElse(aNew);
+                current.addSuccessor(symbol, anOld);
+                if (!anOld.getStates().isEmpty() && !visited.contains(anOld)) {
+                    queue.offer(anOld);
                 }
             }
         }
-        
-        Node current = startStates;
-        for (char c : sChars) {
+
+//        System.out.println(s0);
+        S current = s0;
+        for (char c : s.toCharArray()) {
             //
-            current = current.next.get(c);
+            Set<S> successors = current.successors(c);
+            if (successors.size() > 1) {
+                throw new IllegalStateException("Only one successor should be found for 1 symbol in DFA");
+            }
+            current = successors.stream().findFirst().orElse(null);
             if (current == null) {
                 return false;
             }
         }
 
-        return current.contains(finite);
+        return current.getStates().contains(states[states.length - 1]);
     }
-    
-//    public static boolean isMatch(String s, String p) {
-//        char[] alphabet = new char[]{'a', 'b', 'c', 'd', 'e', 's', 'v', 'x', 'y', 'z'};
-//        State[] states = new State[p.length() + 1];
-//        char[] sChars = s.toCharArray();
-//        char[] pChars = p.toCharArray();
-//        for (int i = 0; i <= pChars.length; i++) {
-//            states[i] = new State(i);
-//            if (i > 0) {
-//                if (pChars[i - 1] == '.') {
-//                    for (char c : alphabet) {
-//                        states[i - 1].next.put(c, states[i]);
-//                    }
-//                } else {
-//                    states[i - 1].next.put(pChars[i - 1], states[i]);
-//                }
-//            }
-//        }
-//        State current = states[0];
-//        State finite = states[p.length()];
-//
-//        for (char c : sChars) {
-//            current = current.next.get(c);
-//            if (current == null) {
-//                return false;
-//            }
-//        }
-//        
-//        return Objects.equals(current, finite);
-//    }
 
-    private static class State {
-        final int id;
-        Map<Character, Set<State>> next = new HashMap<>();
+    /**
+     * State of a deterministic finite automation (DFA).
+     */
+    private static class Q<T extends Q> {
+        private static final AtomicLong g = new AtomicLong();
+        @SuppressWarnings("unused")
+        protected final long idForDebug = g.getAndIncrement();
+        private final Map<Character, Set<T>> successors = new HashMap<>();
 
-        State(int id) {
-            this.id = id;
+        public Set<T> successors(char symbol) {
+            return Collections.unmodifiableSet(successors.getOrDefault(symbol, Collections.emptySet()));
         }
 
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-
-            State state = (State) o;
-
-            return id == state.id;
+        public void addSuccessor(char symbol, T next) {
+            if (symbol == '.') {
+                for (int i = 0; i < alphabet.length; i++) {
+                    addSuccessor(alphabet[i], next);
+                }
+            } else {
+                successors.computeIfAbsent(symbol, character -> new HashSet<>()).add(next);
+            }
         }
 
-        @Override
-        public int hashCode() {
-            return id;
+        public void removeSuccessor(char symbol, Q removed) {
+            if (symbol == '.') {
+                for (int i = 0; i < alphabet.length; i++) {
+                    removeSuccessor(alphabet[i], removed);
+                }
+            } else {
+                successors.computeIfAbsent(symbol, character -> new HashSet<>()).remove(removed);
+            }
         }
 
         @Override
         public String toString() {
-            return String.valueOf(id);
+            return toString(0, new HashSet<>());
+        }
+
+        protected String toString(int indent, Set<Q> alreadyPrinted) {
+            alreadyPrinted.add(this);
+            String indentation = "\t".repeat(indent);
+            List<Character> symbols = new ArrayList<>(successors.keySet());
+            StringBuilder builder = new StringBuilder(nodeName());
+            symbols.stream().sorted().forEach(character -> {
+                builder.append("\n" + indentation);
+                builder.append(character);
+                builder.append(" -> ");
+                successors(character).forEach(state -> {
+                    if (!alreadyPrinted.contains(state)) {
+                        //noinspection unchecked
+                        builder.append(state.toString(indent + 1, alreadyPrinted));
+                    } else {
+                        builder.append(nodeName());
+                    }
+                });
+            });
+            return builder.toString();
+        }
+
+        public String nodeName() {
+            return "q%d:".formatted(idForDebug);
         }
     }
-    
-    private static class Node extends HashSet<State> {
-        final Map<Character, Node> next = new HashMap<>();
+
+    /**
+     * State of a nondeterministic finite automation (NFA).
+     */
+    private static final class S extends Q<S> {
+
+        private final Set<Q<S>> states = new HashSet<>();
+
+        public S() {
+        }
+
+        public S(Q<S>... states) {
+            //noinspection UseBulkOperation
+            Arrays.stream(states).forEach(this.states::add);
+        }
+
+        public void add(Q<S> state) {
+            states.add(state);
+        }
+
+        public void remove(Q<S> state) {
+            states.remove(state);
+        }
+
+        public java.util.Collection<Q<S>> getStates() {
+            return Collections.unmodifiableCollection(states);
+        }
+
+        public void addStates(java.util.Collection<Q<S>> states) {
+            this.states.addAll(states);
+        }
+
+        public boolean containsAll(java.util.Collection<Q<S>> states) {
+            return this.states.containsAll(states);
+        }
+
+        @Override
+        public String nodeName() {
+            return "q%d:".formatted(idForDebug);
+        }
     }
 }
