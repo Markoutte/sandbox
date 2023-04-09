@@ -1,9 +1,11 @@
 package me.markoutte.sandbox.competitions.leetcode;
 
 
+
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.IntStream;
+import java.util.stream.StreamSupport;
 
 /**
  * Given an input string s and a pattern p, implement regular expression matching with support for '.' and '*' where:
@@ -48,18 +50,18 @@ import java.util.stream.IntStream;
 public class RegularExpressionMatching {
 
     public static void main(String[] args) {
-//        System.out.println(isMatch("aa", "a")); // false
-//        System.out.println(isMatch("aa", "a*")); // true
-//        System.out.println(isMatch("ab", ".*")); // true
-//        System.out.println(isMatch("aaba", "ab*a*c*a")); // false
-//        System.out.println(isMatch("asb", "asb")); // true
-//        System.out.println(isMatch("asb", "avb")); // false
-//        System.out.println(isMatch("asb", "a.b")); // true
-//        System.out.println(isMatch("abc", ".*c")); // true
-//        System.out.println(isMatch("abc", ".*")); // true
-//        System.out.println(isMatch("abfec", "a.*c")); // true
-//        System.out.println(isMatch("helloworldandme", "hel*o.*and.*")); // true
-//        System.out.println(isMatch("abaa", "a.a.")); // true
+        System.out.println(isMatch("aa", "a")); // false
+        System.out.println(isMatch("aa", "a*")); // true
+        System.out.println(isMatch("ab", ".*")); // true
+        System.out.println(isMatch("aaba", "ab*a*c*a")); // false
+        System.out.println(isMatch("asb", "asb")); // true
+        System.out.println(isMatch("asb", "avb")); // false
+        System.out.println(isMatch("asb", "a.b")); // true
+        System.out.println(isMatch("abc", ".*c")); // true
+        System.out.println(isMatch("abc", ".*")); // true
+        System.out.println(isMatch("abfec", "a.*c")); // true
+        System.out.println(isMatch("helloworldandme", "hel*o.*and.*")); // true
+        System.out.println(isMatch("abaa", "a.a.")); // true
         System.out.println(isMatch("babbcabcaabbbacaca", "bb*.c*.c*b*b.*c")); // false
     }
 
@@ -95,6 +97,13 @@ public class RegularExpressionMatching {
                 states[i].addSuccessor(symbols[i], states[i + 1]);
             }
         }
+        // update states indexes
+        for (int i = 0; i < states.length; i++) {
+            Q state = states[i];
+            if (state != null) {
+                state.setIndex(i);
+            }
+        }
         
 //        System.out.println(states[0]);
 //        // If current is DFA (without * and .) this check should work
@@ -112,28 +121,25 @@ public class RegularExpressionMatching {
 
         // NFA -> DFA
         Queue<S> queue = new ArrayDeque<>();
-        S s0 = new S(states[0]);
+        S s0 = new S(states, states[0]);
         s0.eps();
         queue.offer(s0);
-        Set<S> visited = new HashSet<>();
+        Map<Long, S> visited = new HashMap<>();
         
         while (!queue.isEmpty()) {
             final S current = queue.poll();
-            visited.add(current);
+            visited.put(current.getId(), current);
             for (char symbol : current.symbols()) {
-                final S aNew = new S();
+                final S aNew = new S(states);
                 for (Q q : current.getStates()) {
                     aNew.addStates(q.successors(symbol));
                 }
                 aNew.eps();
                 // magic: find the same node in visited to reuse it
-                final S anOld = visited.stream().filter(n -> {
-                    if (n.getStates().size() != aNew.getStates().size()) return false;
-                    return n.containsAll(aNew.getStates());
-                }).findFirst().orElse(aNew);
+                final S anOld = visited.getOrDefault(aNew.getId(), aNew);
                 
                 current.addSuccessor(symbol, anOld);
-                if (!anOld.getStates().isEmpty() && !visited.contains(anOld)) {
+                if (!anOld.isEmpty() && !visited.containsKey(anOld.getId())) {
                     queue.offer(anOld);
                 }
             }
@@ -153,7 +159,7 @@ public class RegularExpressionMatching {
             }
         }
 
-        return current.getStates().contains(states[states.length - 1]);
+        return StreamSupport.stream(current.getStates().spliterator(), false).anyMatch(q -> q == states[states.length - 1]);
     }
     
     /**
@@ -222,8 +228,19 @@ public class RegularExpressionMatching {
     }
 
     private static final class Q extends N<Q> {
+
+        private int index;
+        
         public String nodeName() {
             return "q%d:".formatted(idForDebug);
+        }
+
+        public int getIndex() {
+            return index;
+        }
+
+        public void setIndex(int index) {
+            this.index = index;
         }
     } 
     
@@ -232,40 +249,96 @@ public class RegularExpressionMatching {
      */
     private static final class S extends N<S> {
 
-        private final Set<Q> states = new HashSet<>();
+        private final BitSet states;
+        private final BitSet cache;
+        private final Q[] source;
 
-        public S() {
+        public S(Q[] source) {
+            this(source, new Q[0]);
         }
 
-        public S(Q... states) {
-            //noinspection UseBulkOperation
-            Arrays.stream(states).forEach(this.states::add);
+        public S(Q[] source, Q... states) {
+            this.source = source;
+            this.states = new BitSet(source.length);
+            this.cache = new BitSet(source.length);
+            for (Q state : states) {
+                add(state);
+            }
+        }
+
+        public boolean isEmpty() {
+            return this.states.isEmpty();
         }
 
         public void add(Q state) {
-            states.add(state);
+            this.states.set(state.index, true);
         }
 
         public void remove(Q state) {
-            states.remove(state);
+            this.states.set(state.index, false);
         }
 
-        public java.util.Collection<Q> getStates() {
-            return Collections.unmodifiableCollection(states);
+        public long getId() {
+            long[] longs = this.states.toLongArray();
+            if (longs.length != 1) {
+                throw new IllegalStateException("By the task maximum 20 symbols are can be passed. It can be stored in one long, but " + longs.length + " is used");
+            }
+            return longs[0];
+        }
+
+        public Iterable<Q> getStates() {
+            return () -> new Iterator<>() {
+                Q next = null;
+                int index = -1;
+                final int size = source.length;
+                
+                @Override
+                public boolean hasNext() {
+                    tryLoad();
+                    return next != null;
+                }
+
+                @Override
+                public Q next() {
+                    if (next == null) {
+                        tryLoad();
+                        if (next == null) {
+                            throw new NoSuchElementException();
+                        }
+                    }
+                    return next;
+                }
+
+                private void tryLoad() {
+                    for (++index; index < size; index++) {
+                        if (states.get(index)) {
+                            next = source[index];
+                            return;
+                        }
+                    }
+                    next = null;
+                }
+            };
         }
 
         public void addStates(java.util.Collection<Q> states) {
-            this.states.addAll(states);
+            for (Q state : states) {
+                add(state);
+            }
         }
-
+        
         public boolean containsAll(java.util.Collection<Q> states) {
-            return this.states.containsAll(states);
+            cache.clear();
+            for (Q state : states) {
+                cache.set(state.index);
+            }
+            return cache.equals(this.states);
         }
 
         @Override
         public char[] symbols() {
             Set<Character> symbols = new HashSet<>();
-            for (Q state : states) {
+            for (Q state : getStates()) {
                 for (char s : state.symbols()) {
                     if (s == '.') {
                         return alphabet;
@@ -282,7 +355,8 @@ public class RegularExpressionMatching {
         }
 
         public void eps() {
-            Queue<Q> e = new ArrayDeque<>(this.states);
+            Queue<Q> e = new ArrayDeque<>();
+            getStates().forEach(e::offer);
             while (!e.isEmpty()) {
                 Set<Q> epsClosure = e.poll().successors(EPS);
                 addStates(epsClosure);
