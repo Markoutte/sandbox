@@ -4,6 +4,7 @@ package me.markoutte.sandbox.competitions.leetcode;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Consumer;
 import java.util.stream.IntStream;
 import java.util.stream.StreamSupport;
 
@@ -63,9 +64,11 @@ public class RegularExpressionMatching {
         System.out.println(isMatch("helloworldandme", "hel*o.*and.*")); // true
         System.out.println(isMatch("abaa", "a.a.")); // true
         System.out.println(isMatch("babbcabcaabbbacaca", "bb*.c*.c*b*b.*c")); // false
+        System.out.println(isMatch("baabbbaccbccacacc", "c*..b*a*a.*a..*c")); // true
     }
 
     private static final char EPS = (char) 0;
+    private static final char ANY = '.';
     
     private static final char[] alphabet = IntStream.range('a', 'z' + 1)
             .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
@@ -132,7 +135,7 @@ public class RegularExpressionMatching {
             for (char symbol : current.symbols()) {
                 final S aNew = new S(states);
                 for (Q q : current.getStates()) {
-                    aNew.addStates(q.successors(symbol));
+                    aNew.addStates(q.successors(symbol), null);
                 }
                 aNew.eps();
                 // magic: find the same node in visited to reuse it
@@ -149,13 +152,13 @@ public class RegularExpressionMatching {
         S current = s0;
         for (char c : s.toCharArray()) {
             //
-            Set<S> successors = current.successors(c);
-            if (successors.size() > 1) {
-                throw new IllegalStateException("Only one successor should be found for 1 symbol in DFA");
-            }
-            current = successors.stream().findFirst().orElse(null);
-            if (current == null) {
+            Iterator<S> successors = current.successors(c).iterator();
+            if (!successors.hasNext()) {
                 return false;
+            }
+            current = successors.next();
+            if (successors.hasNext()) {
+                throw new IllegalStateException("Only one successor should be found for 1 symbol in DFA");
             }
         }
 
@@ -169,24 +172,40 @@ public class RegularExpressionMatching {
         private static final AtomicLong g = new AtomicLong();
         @SuppressWarnings("unused")
         protected final long idForDebug = g.getAndIncrement();
-        private final Map<Character, Set<T>> successors = new HashMap<>();
+        private final Map<Character, List<T>> successors = new HashMap<>();
 
-        public Set<T> successors(char symbol) {
-            if (successors.containsKey('.') && symbol != EPS) {
-                Set<T> result = new HashSet<>(successors.get('.'));
-                result.addAll(successors.getOrDefault(symbol, Collections.emptySet()));
-                return result;
+        public Iterable<T> successors(char symbol) {
+            if (successors.containsKey(ANY) && symbol != EPS && symbol != ANY) {
+                final Iterator<T> anySymbolSuccessors = successors.get(ANY).iterator();
+                final Iterator<T> thisSymbolSuccessors = successors.get(ANY).iterator();
+                return () -> new Iterator<T>() {
+                    @Override
+                    public boolean hasNext() {
+                        return anySymbolSuccessors.hasNext() || thisSymbolSuccessors.hasNext();
+                    }
+
+                    @Override
+                    public T next() {
+                        if (anySymbolSuccessors.hasNext()) {
+                            return anySymbolSuccessors.next();
+                        }
+                        if (thisSymbolSuccessors.hasNext()) {
+                            return thisSymbolSuccessors.next();
+                        }
+                        throw new java.util.NoSuchElementException();
+                    }
+                };
             } else {
-                return Collections.unmodifiableSet(successors.getOrDefault(symbol, Collections.emptySet()));
+                return successors.getOrDefault(symbol, Collections.emptyList());
             }
         }
 
         public void addSuccessor(char symbol, T next) {
-            successors.computeIfAbsent(symbol, character -> new HashSet<>()).add(next);
+            successors.computeIfAbsent(symbol, character -> new LinkedList<>()).add(next);
         }
 
         public void removeSuccessor(char symbol, T removed) {
-            successors.computeIfAbsent(symbol, character -> new HashSet<>()).remove(removed);
+            successors.computeIfAbsent(symbol, character -> new LinkedList<>()).remove(removed);
         }
 
         public char[] symbols() {
@@ -303,7 +322,7 @@ public class RegularExpressionMatching {
                     if (next == null) {
                         tryLoad();
                         if (next == null) {
-                            throw new NoSuchElementException();
+                            throw new java.util.NoSuchElementException();
                         }
                     }
                     return next;
@@ -321,9 +340,12 @@ public class RegularExpressionMatching {
             };
         }
 
-        public void addStates(java.util.Collection<Q> states) {
+        public void addStates(Iterable<Q> states, Consumer<Q> also) {
             for (Q state : states) {
                 add(state);
+                if (also != null) {
+                    also.accept(state);
+                }
             }
         }
         
@@ -340,7 +362,7 @@ public class RegularExpressionMatching {
             Set<Character> symbols = new HashSet<>();
             for (Q state : getStates()) {
                 for (char s : state.symbols()) {
-                    if (s == '.') {
+                    if (s == ANY) {
                         return alphabet;
                     }
                     symbols.add(s);
@@ -355,12 +377,19 @@ public class RegularExpressionMatching {
         }
 
         public void eps() {
-            Queue<Q> e = new ArrayDeque<>();
-            getStates().forEach(e::offer);
-            while (!e.isEmpty()) {
-                Set<Q> epsClosure = e.poll().successors(EPS);
-                addStates(epsClosure);
-                e.addAll(epsClosure);
+//            Queue<Q> e = new ArrayDeque<>(50);
+//            getStates().forEach(e::offer);
+//            while (!e.isEmpty()) {
+//                Iterable<Q> epsClosure = e.poll().successors(EPS);
+//                addStates(epsClosure, e::add);
+//            }
+            for (Q state : getStates()) {
+                addStates(state.successors(EPS), new Consumer<>() {
+                    @Override
+                    public void accept(Q q) {
+                        addStates(q.successors(EPS), this);
+                    }
+                });
             }
         }
 
