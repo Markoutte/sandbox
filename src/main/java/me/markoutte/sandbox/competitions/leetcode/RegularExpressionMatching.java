@@ -4,7 +4,6 @@ package me.markoutte.sandbox.competitions.leetcode;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.Consumer;
 import java.util.stream.IntStream;
 import java.util.stream.StreamSupport;
 
@@ -50,6 +49,7 @@ import java.util.stream.StreamSupport;
  */
 public class RegularExpressionMatching {
 
+    @SuppressWarnings("SpellCheckingInspection")
     public static void main(String[] args) {
         check("aa", "a", false);
         check("aa", "a*", true);
@@ -93,15 +93,11 @@ public class RegularExpressionMatching {
             .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
             .toString()
             .toCharArray();
-    private static final char[] alphabetWithEps = new char[alphabet.length + 1]; static {
-        alphabetWithEps[0] = EPS;
-        System.arraycopy(alphabet, 0, alphabetWithEps, 1, alphabet.length);
-    }
     
     public static boolean isMatch(String s, String p) {
         char[] symbols = p.toCharArray();
-        // We gonna keep the states of NFA in arrays to facilitate initial creation.
-        // Real number of states can be less that total number of symbols,
+        // We're going to keep the states of NFA in arrays to facilitate initial creation.
+        // The real number of states can be less that total number of symbols,
         // because of special character '*', but it doesn't matter.
         // Note that only valid patter is expected (the p like "***" can cause an error).
         Q[] states = new Q[symbols.length + 1];
@@ -136,11 +132,8 @@ public class RegularExpressionMatching {
         while (!queue.isEmpty()) {
             final S current = queue.poll();
             for (char symbol : alphabet) {
-                if (symbol == EPS) {
-                    throw new IllegalStateException("Unexpected EPS symbol");
-                }
                 Iterable<Q> newStates = move(current, symbol);
-                S newState = new S(states, join(newStates, eps(newStates)));
+                var newState = new S(states, join(newStates, eps(newStates)));
                 if (!newState.isEmpty()) {
                     if (visited.containsKey(newState.getId())) {
                         newState = visited.getOrDefault(newState.getId(), newState);
@@ -152,8 +145,7 @@ public class RegularExpressionMatching {
                 }
             }
         }
-
-//        System.out.println(s0);
+        
         S current = s0;
         for (char c : s.toCharArray()) {
             //
@@ -196,6 +188,7 @@ public class RegularExpressionMatching {
         return () -> new JoinIterator<>(result);
     }
 
+    @SafeVarargs
     private static <T> Iterable<T> join(Iterable<T>... iterables) {
         return () -> new JoinIterator<>(iterables);
     }
@@ -203,7 +196,7 @@ public class RegularExpressionMatching {
     /**
      * State of a deterministic finite automation (DFA).
      */
-    private abstract static class N<T extends N> {
+    private abstract static class N<T extends N<T>> {
         private static final AtomicLong g = new AtomicLong();
         @SuppressWarnings("unused")
         protected final long idForDebug = g.getAndIncrement();
@@ -214,7 +207,7 @@ public class RegularExpressionMatching {
                 return () -> new JoinIterator<>(successors);
             }
             else if (successors.containsKey(ANY) && symbol != EPS) {
-                return () -> new JoinIterator(successors.get(ANY), successors.getOrDefault(symbol, Collections.emptyList()));
+                return () -> new JoinIterator<>(successors.get(ANY), successors.getOrDefault(symbol, Collections.emptyList()));
             } else {
                 return successors.getOrDefault(symbol, Collections.emptyList());
             }
@@ -228,15 +221,6 @@ public class RegularExpressionMatching {
             successors.computeIfAbsent(symbol, character -> new LinkedList<>()).remove(removed);
         }
 
-        public char[] symbols() {
-            char[] symbols = new char[successors.size()];
-            int i = 0;
-            for (Character character : successors.keySet()) {
-                symbols[i++] = character;
-            }
-            return symbols;
-        }
-
         @Override
         public String toString() {
             return toString(0, new HashSet<>());
@@ -248,12 +232,11 @@ public class RegularExpressionMatching {
             List<Character> symbols = new ArrayList<>(successors.keySet());
             StringBuilder builder = new StringBuilder(nodeName());
             symbols.stream().sorted().forEach(character -> {
-                builder.append("\n" + indentation);
+                builder.append("\n").append(indentation);
                 builder.append(character);
                 builder.append(" -> ");
                 successors(character).forEach(state -> {
                     if (!alreadyPrinted.contains(state)) {
-                        //noinspection unchecked
                         builder.append(state.toString(indent + 1, alreadyPrinted));
                     } else {
                         builder.append(nodeName());
@@ -289,16 +272,7 @@ public class RegularExpressionMatching {
     private static final class S extends N<S> {
 
         private final BitSet states;
-        private final BitSet cache;
         private final Q[] source;
-
-        public S(Q[] source) {
-            this(source, (Iterable<Q>) null);
-        }
-
-        public S(Q[] source, Q state) {
-            this(source, Collections.singletonList(state));
-        }
 
         public S(Q[] source, Q state, Iterable<Q> others) {
             this(source, join(Collections.singletonList(state), others));
@@ -307,7 +281,6 @@ public class RegularExpressionMatching {
         public S(Q[] source, Iterable<Q> states) {
             this.source = source;
             this.states = new BitSet(source.length);
-            this.cache = new BitSet(source.length);
             if (states != null) {
                 for (Q state : states) {
                     add(state);
@@ -315,20 +288,12 @@ public class RegularExpressionMatching {
             }
         }
 
-        public S(Q[] source, Iterable<Q> state1, Iterable<Q> state2) {
-            this(source, () -> new JoinIterator<>(state1, state2));
-        }
-
         public boolean isEmpty() {
             return this.states.isEmpty();
         }
 
         public void add(Q state) {
-            this.states.set(state.index, true);
-        }
-
-        public void remove(Q state) {
-            this.states.set(state.index, false);
+            this.states.set(state.getIndex(), true);
         }
 
         public long getId() {
@@ -378,44 +343,6 @@ public class RegularExpressionMatching {
             };
         }
 
-        public void addStates(Iterable<Q> states, Consumer<Q> also) {
-            for (Q state : states) {
-                add(state);
-                if (also != null) {
-                    also.accept(state);
-                }
-            }
-        }
-        
-        public boolean containsAll(java.util.Collection<Q> states) {
-            cache.clear();
-            for (Q state : states) {
-                cache.set(state.index);
-            }
-            return cache.equals(this.states);
-        }
-
-        @Override
-        public char[] symbols() {
-            Set<Character> symbols = new HashSet<>();
-            for (Q state : getStates()) {
-                for (char s : state.symbols()) {
-                    if (s == ANY) {
-                        return alphabet;//new char[]{ANY};
-                    }
-                    if (s != EPS) {
-                        symbols.add(s);
-                    }
-                }
-            }
-            char[] result = new char[symbols.size()];
-            int i = 0;
-            for (Character symbol : symbols) {
-                result[i++] = symbol;
-            }
-            return result;
-        }
-
         @Override
         public String nodeName() {
             return "s%d:".formatted(idForDebug);
@@ -427,6 +354,7 @@ public class RegularExpressionMatching {
         private final Iterator<E>[] iterators;
 
         public JoinIterator(Map<Character, ? extends Iterable<E>> map) {
+            //noinspection unchecked
             this.iterators = new Iterator[map.containsKey(EPS) ? map.size() - 1 : map.size()];
             int i = 0;
             for (Map.Entry<Character, ? extends Iterable<E>> entry : map.entrySet()) {
@@ -437,6 +365,7 @@ public class RegularExpressionMatching {
         }
         
         public JoinIterator(java.util.Collection<? extends Iterable<E>> collection) {
+            //noinspection unchecked
             this.iterators = new Iterator[collection.size()];
             int i = 0;
             for (Iterable<E> iterable : collection) {
@@ -444,15 +373,13 @@ public class RegularExpressionMatching {
             }
         }
         
+        @SafeVarargs
         public JoinIterator(Iterable<E>... iterables) {
+            //noinspection unchecked
             this.iterators = new Iterator[iterables.length];
             for (int i = 0; i < iterables.length; i++) {
                 this.iterators[i] = iterables[i].iterator();
             }
-        }
-        
-        public JoinIterator(Iterator<E>... iterators) {
-            this.iterators = iterators;
         }
 
         @Override
@@ -474,6 +401,7 @@ public class RegularExpressionMatching {
         }
     }
 
+    @SuppressWarnings("unused") // for debugging
     private static <T> List<T> toList(Iterable<T> iterable) {
         var list = new ArrayList<T>();
         iterable.forEach(list::add);
