@@ -51,20 +51,39 @@ import java.util.stream.StreamSupport;
 public class RegularExpressionMatching {
 
     public static void main(String[] args) {
-        System.out.println(isMatch("aa", "a")); // false
-        System.out.println(isMatch("aa", "a*")); // true
-        System.out.println(isMatch("ab", ".*")); // true
-        System.out.println(isMatch("aaba", "ab*a*c*a")); // false
-        System.out.println(isMatch("asb", "asb")); // true
-        System.out.println(isMatch("asb", "avb")); // false
-        System.out.println(isMatch("asb", "a.b")); // true
-        System.out.println(isMatch("abc", ".*c")); // true
-        System.out.println(isMatch("abc", ".*")); // true
-        System.out.println(isMatch("abfec", "a.*c")); // true
-        System.out.println(isMatch("helloworldandme", "hel*o.*and.*")); // true
-        System.out.println(isMatch("abaa", "a.a.")); // true
-        System.out.println(isMatch("babbcabcaabbbacaca", "bb*.c*.c*b*b.*c")); // false
-        System.out.println(isMatch("baabbbaccbccacacc", "c*..b*a*a.*a..*c")); // true
+        check("aa", "a", false);
+        check("aa", "a*", true);
+        check("ab", ".*", true);
+        check("aaba", "ab*a*c*a", false);
+        check("asb", "asb", true);
+        check("asb", "avb", false);
+        check("asb", "a.b", true);
+        check("abc", ".*c", true);
+        check("abc", ".*", true);
+        check("abfec", "a.*c", true);
+        check("helloworldandme", "hel*o.*and.*", true);
+        check("abaa", "a.a.", true);
+        check("babbcabcaabbbacaca", "bb*.c*.c*b*b.*c", false);
+        check("baabbbaccbccacacc", "c*..b*a*a.*a..*c", true);
+        check("mississippi", "mis*is*p*.", false);
+        check("ippi", "p*.", false);
+    }
+
+    private static void check(String s, String p, boolean expected) {
+        boolean match = isMatch(s, p);
+        StringBuilder sb = new StringBuilder();
+        if (match == expected) {
+            sb.append("OK ");
+        } else {
+            sb.append("BAD");
+        }
+        sb.append(" ");
+        sb.append(s);
+        sb.append(", ");
+        sb.append(p);
+        sb.append(" => ");
+        sb.append(match);
+        System.out.println(sb);
     }
 
     private static final char EPS = (char) 0;
@@ -107,43 +126,29 @@ public class RegularExpressionMatching {
                 state.setIndex(i);
             }
         }
-        
-//        System.out.println(states[0]);
-//        // If current is DFA (without * and .) this check should work
-//        Q<Q> qurrent = states[0];
-//        for (char c : s.toCharArray()) {
-//            //
-//            qurrent = qurrent.successors(c).stream().findFirst().orElse(null);
-//            if (qurrent == null) {
-//                return false;
-//            }
-//        }
-//        if (true) {
-//            return qurrent == states[states.length - 1];
-//        }
 
         // NFA -> DFA
         Queue<S> queue = new ArrayDeque<>();
-        S s0 = new S(states, states[0]);
-        s0.eps();
+        S s0 = new S(states, states[0], eps(states[0]));
         queue.offer(s0);
         Map<Long, S> visited = new HashMap<>();
         
         while (!queue.isEmpty()) {
             final S current = queue.poll();
-            visited.put(current.getId(), current);
-            for (char symbol : current.symbols()) {
-                final S aNew = new S(states);
-                for (Q q : current.getStates()) {
-                    aNew.addStates(q.successors(symbol), null);
+            for (char symbol : alphabet) {
+                if (symbol == EPS) {
+                    throw new IllegalStateException("Unexpected EPS symbol");
                 }
-                aNew.eps();
-                // magic: find the same node in visited to reuse it
-                final S anOld = visited.getOrDefault(aNew.getId(), aNew);
-                
-                current.addSuccessor(symbol, anOld);
-                if (!anOld.isEmpty() && !visited.containsKey(anOld.getId())) {
-                    queue.offer(anOld);
+                Iterable<Q> newStates = move(current, symbol);
+                S newState = new S(states, join(newStates, eps(newStates)));
+                if (!newState.isEmpty()) {
+                    if (visited.containsKey(newState.getId())) {
+                        newState = visited.getOrDefault(newState.getId(), newState);
+                    } else {
+                        queue.offer(newState);
+                        visited.put(newState.getId(), newState);
+                    }
+                    current.addSuccessor(symbol, newState);
                 }
             }
         }
@@ -164,6 +169,36 @@ public class RegularExpressionMatching {
 
         return StreamSupport.stream(current.getStates().spliterator(), false).anyMatch(q -> q == states[states.length - 1]);
     }
+
+    private static Iterable<Q> move(S states, char symbol) {
+        return move(states.getStates(), symbol);
+    }
+
+    private static Iterable<Q> move(Iterable<Q> states, char symbol) {
+        List<Iterable<Q>> result = new LinkedList<>();
+        for (Q q : states) {
+            result.add(q.successors(symbol));
+        }
+        return () -> new JoinIterator<>(result);
+    }
+
+    public static Iterable<Q> eps(Q state) {
+        return eps(Collections.singletonList(state));
+    }
+
+    public static Iterable<Q> eps(Iterable<Q> states) {
+        List<Iterable<Q>> result = new ArrayList<>(100);
+        for (Q state : states) {
+            Iterable<Q> successors = state.successors(EPS);
+            result.add(successors);
+            result.add(eps(successors));
+        }
+        return () -> new JoinIterator<>(result);
+    }
+
+    private static <T> Iterable<T> join(Iterable<T>... iterables) {
+        return () -> new JoinIterator<>(iterables);
+    }
     
     /**
      * State of a deterministic finite automation (DFA).
@@ -175,26 +210,11 @@ public class RegularExpressionMatching {
         private final Map<Character, List<T>> successors = new HashMap<>();
 
         public Iterable<T> successors(char symbol) {
-            if (successors.containsKey(ANY) && symbol != EPS && symbol != ANY) {
-                final Iterator<T> anySymbolSuccessors = successors.get(ANY).iterator();
-                final Iterator<T> thisSymbolSuccessors = successors.get(ANY).iterator();
-                return () -> new Iterator<T>() {
-                    @Override
-                    public boolean hasNext() {
-                        return anySymbolSuccessors.hasNext() || thisSymbolSuccessors.hasNext();
-                    }
-
-                    @Override
-                    public T next() {
-                        if (anySymbolSuccessors.hasNext()) {
-                            return anySymbolSuccessors.next();
-                        }
-                        if (thisSymbolSuccessors.hasNext()) {
-                            return thisSymbolSuccessors.next();
-                        }
-                        throw new java.util.NoSuchElementException();
-                    }
-                };
+            if (symbol == ANY) {
+                return () -> new JoinIterator<>(successors);
+            }
+            else if (successors.containsKey(ANY) && symbol != EPS) {
+                return () -> new JoinIterator(successors.get(ANY), successors.getOrDefault(symbol, Collections.emptyList()));
             } else {
                 return successors.getOrDefault(symbol, Collections.emptyList());
             }
@@ -273,16 +293,30 @@ public class RegularExpressionMatching {
         private final Q[] source;
 
         public S(Q[] source) {
-            this(source, new Q[0]);
+            this(source, (Iterable<Q>) null);
         }
 
-        public S(Q[] source, Q... states) {
+        public S(Q[] source, Q state) {
+            this(source, Collections.singletonList(state));
+        }
+
+        public S(Q[] source, Q state, Iterable<Q> others) {
+            this(source, join(Collections.singletonList(state), others));
+        }
+
+        public S(Q[] source, Iterable<Q> states) {
             this.source = source;
             this.states = new BitSet(source.length);
             this.cache = new BitSet(source.length);
-            for (Q state : states) {
-                add(state);
+            if (states != null) {
+                for (Q state : states) {
+                    add(state);
+                }
             }
+        }
+
+        public S(Q[] source, Iterable<Q> state1, Iterable<Q> state2) {
+            this(source, () -> new JoinIterator<>(state1, state2));
         }
 
         public boolean isEmpty() {
@@ -313,7 +347,9 @@ public class RegularExpressionMatching {
                 
                 @Override
                 public boolean hasNext() {
-                    tryLoad();
+                    if (next == null) {
+                        tryLoad();
+                    }
                     return next != null;
                 }
 
@@ -325,7 +361,9 @@ public class RegularExpressionMatching {
                             throw new java.util.NoSuchElementException();
                         }
                     }
-                    return next;
+                    Q result = next;
+                    next = null;
+                    return result;
                 }
 
                 private void tryLoad() {
@@ -363,9 +401,11 @@ public class RegularExpressionMatching {
             for (Q state : getStates()) {
                 for (char s : state.symbols()) {
                     if (s == ANY) {
-                        return alphabet;
+                        return alphabet;//new char[]{ANY};
                     }
-                    symbols.add(s);
+                    if (s != EPS) {
+                        symbols.add(s);
+                    }
                 }
             }
             char[] result = new char[symbols.size()];
@@ -376,26 +416,67 @@ public class RegularExpressionMatching {
             return result;
         }
 
-        public void eps() {
-//            Queue<Q> e = new ArrayDeque<>(50);
-//            getStates().forEach(e::offer);
-//            while (!e.isEmpty()) {
-//                Iterable<Q> epsClosure = e.poll().successors(EPS);
-//                addStates(epsClosure, e::add);
-//            }
-            for (Q state : getStates()) {
-                addStates(state.successors(EPS), new Consumer<>() {
-                    @Override
-                    public void accept(Q q) {
-                        addStates(q.successors(EPS), this);
-                    }
-                });
-            }
-        }
-
         @Override
         public String nodeName() {
             return "s%d:".formatted(idForDebug);
         }
     }
+    
+    private static class JoinIterator<E> implements Iterator<E> {
+
+        private final Iterator<E>[] iterators;
+
+        public JoinIterator(Map<Character, ? extends Iterable<E>> map) {
+            this.iterators = new Iterator[map.containsKey(EPS) ? map.size() - 1 : map.size()];
+            int i = 0;
+            for (Map.Entry<Character, ? extends Iterable<E>> entry : map.entrySet()) {
+                if (entry.getKey() != EPS) {
+                    this.iterators[i++] = entry.getValue().iterator();
+                }
+            }
+        }
+        
+        public JoinIterator(java.util.Collection<? extends Iterable<E>> collection) {
+            this.iterators = new Iterator[collection.size()];
+            int i = 0;
+            for (Iterable<E> iterable : collection) {
+                this.iterators[i++] = iterable.iterator();
+            }
+        }
+        
+        public JoinIterator(Iterable<E>... iterables) {
+            this.iterators = new Iterator[iterables.length];
+            for (int i = 0; i < iterables.length; i++) {
+                this.iterators[i] = iterables[i].iterator();
+            }
+        }
+        
+        public JoinIterator(Iterator<E>... iterators) {
+            this.iterators = iterators;
+        }
+
+        @Override
+        public boolean hasNext() {
+            for (Iterator<E> iterator : iterators) {
+                if (iterator.hasNext()) return true;
+            }
+            return false;
+        }
+
+        @Override
+        public E next() {
+            for (Iterator<E> iterator : iterators) {
+                if (iterator.hasNext()) {
+                    return iterator.next();
+                }
+            }
+            throw new java.util.NoSuchElementException();
+        }
+    }
+
+    private static <T> List<T> toList(Iterable<T> iterable) {
+        var list = new ArrayList<T>();
+        iterable.forEach(list::add);
+        return list;
+    } 
 }
