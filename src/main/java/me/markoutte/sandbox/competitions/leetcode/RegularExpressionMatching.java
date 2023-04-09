@@ -105,6 +105,10 @@ public class RegularExpressionMatching {
         for (int i = 0; i < symbols.length; i++) {
             // states[i] means 'previous'
             if (symbols[i] == '*') {
+                // when * is met, we remove previous state `i`, 
+                // but link state `i - 1` like this:
+                // 1. the previous symbol will lead to the state `i - 1`
+                // 2. epsilon moves to the new state.
                 states[i + 1] = new Q();
                 states[i - 1].removeSuccessor(symbols[i - 1], states[i]);
                 states[i] = null;
