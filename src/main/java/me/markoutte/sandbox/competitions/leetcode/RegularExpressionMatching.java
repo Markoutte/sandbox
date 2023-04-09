@@ -129,7 +129,7 @@ public class RegularExpressionMatching {
 
         // NFA -> DFA
         Queue<S> queue = new ArrayDeque<>();
-        S s0 = new S(states, states[0], eps(states[0]));
+        S s0 = new S(states, states[0], epsClosure(states[0]));
         queue.offer(s0);
         Map<Long, S> visited = new HashMap<>();
         
@@ -137,15 +137,13 @@ public class RegularExpressionMatching {
             final S current = queue.poll();
             for (char symbol : alphabet) {
                 Iterable<Q> newStates = move(current, symbol);
-                var newState = new S(states, join(newStates, eps(newStates)));
+                var newState = new S(states, join(newStates, epsClosure(newStates)));
                 if (!newState.isEmpty()) {
-                    if (visited.containsKey(newState.getId())) {
-                        newState = visited.getOrDefault(newState.getId(), newState);
-                    } else {
+                    var oldState = visited.putIfAbsent(newState.getId(), newState);
+                    if (oldState == null) {
                         queue.offer(newState);
-                        visited.put(newState.getId(), newState);
                     }
-                    current.addSuccessor(symbol, newState);
+                    current.addSuccessor(symbol, oldState == null ? newState : oldState);
                 }
             }
         }
@@ -178,16 +176,16 @@ public class RegularExpressionMatching {
         return () -> new JoinIterator<>(result);
     }
 
-    public static Iterable<Q> eps(Q state) {
-        return eps(Collections.singletonList(state));
+    public static Iterable<Q> epsClosure(Q state) {
+        return epsClosure(Collections.singletonList(state));
     }
 
-    public static Iterable<Q> eps(Iterable<Q> states) {
+    public static Iterable<Q> epsClosure(Iterable<Q> states) {
         List<Iterable<Q>> result = new ArrayList<>(100);
         for (Q state : states) {
             Iterable<Q> successors = state.successors(EPS);
             result.add(successors);
-            result.add(eps(successors));
+            result.add(epsClosure(successors));
         }
         return () -> new JoinIterator<>(result);
     }
