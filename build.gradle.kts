@@ -13,6 +13,8 @@ plugins {
 
 val kotlinCoroutineVersion = "1.6.4"
 val junitVersion = "5.9.2"
+val guavaVersion = "32.1.1-jre"
+val fastjsonVersion = "2.0.40"
 
 repositories {
     mavenLocal()
@@ -39,6 +41,8 @@ dependencies {
     implementation("com.formdev:flatlaf:3.0")
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
     testImplementation("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
+    implementation("com.google.guava:guava:$guavaVersion")
+    implementation("com.alibaba.fastjson2:fastjson2:$fastjsonVersion")
 }
 
 java.sourceCompatibility = JavaVersion.VERSION_19
