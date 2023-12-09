@@ -1,5 +1,6 @@
 package me.markoutte.sandbox.algorithms;
 
+// Knuth
 public class Mean {
 
     private int count = 0;
