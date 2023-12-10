@@ -4,14 +4,14 @@ import me.markoutte.sandbox.algorithms.BalancedMean;
 import me.markoutte.sandbox.algorithms.Mean;
 import org.junit.jupiter.api.Test;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.util.Comparator;
 import java.util.Map;
 import java.util.Random;
-import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -58,12 +58,43 @@ public class StringTest {
     }
 
     @Test
+    public void runCodeStress() throws IOException {
+        final StringBuilder sb = new StringBuilder();
+        Files.walk(Paths.get("src"))
+                .filter(path -> path.toString().endsWith(".java") || path.toString().endsWith(".kt"))
+                .forEach(path -> {
+                    try {
+                        sb.append(Files.readString(path));
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+        final String text = sb.toString();
+        Path path = Path.of("string-code.csv");
+        try (var writer = new PrintStream(Files.newOutputStream(path, StandardOpenOption.CREATE))) {
+            runStress(writer, text, 1000, 10000);
+        }
+    }
+
+    @Test
+    public void runDnaStress() throws IOException {
+        final String text;
+        try (var s = StringSearch.class.getClassLoader().getResourceAsStream("dna.txt")) {
+            text = new String(s.readAllBytes());
+        }
+        Path path = Path.of("string-dna.csv");
+        try (var writer = new PrintStream(Files.newOutputStream(path, StandardOpenOption.CREATE))) {
+            runStress(writer, text, 1000, 10000);
+        }
+    }
+
+    @Test
     public void runAliceStress() throws IOException {
         final String text;
         try (var s = StringSearch.class.getClassLoader().getResourceAsStream("alice.txt")) {
             text = new String(s.readAllBytes());
         }
-        Path path = Path.of("stringSearch.csv");
+        Path path = Path.of("string-alice.csv");
         try (var writer = new PrintStream(Files.newOutputStream(path, StandardOpenOption.CREATE))) {
             runStress(writer, text, 1000, 10000);
         }
@@ -76,7 +107,7 @@ public class StringTest {
     }
 
     public static void runStress(PrintStream writer, String text, int length, int runs) throws IOException {
-        writer.append("No;N;J;RK;BM;KMP\n");
+        writer.append("No;J;N;RK;BM;KMP\n");
         for (int i = 1; i < length - 1; i++) {
             final var fi = i;
             stressTest(text, runs, i, new Random().nextInt(), stringSearchMeanMap -> {
@@ -125,16 +156,13 @@ public class StringTest {
                 end = random.nextInt(start + 1, text.length());
             } else {
                 start = random.nextInt(text.length() - 1 - length);
-                end = random.nextInt(start + 1, start + 1 + length);
+                end = start + length;
             }
             final String pattern = text.substring(start, end);
             final int expected = text.indexOf(pattern);
             algorithms.forEach((stringSearch, mean) -> {
                 long s = System.nanoTime();
                 int actual = stringSearch.find(pattern, text);
-                if (actual < 0) {
-                    stringSearch.find(pattern, text);
-                }
                 assertEquals(expected, actual, () -> "Cannot find pattern " + pattern + " for " + stringSearch);
                 long e = System.nanoTime();
                 mean.add(e - s);
