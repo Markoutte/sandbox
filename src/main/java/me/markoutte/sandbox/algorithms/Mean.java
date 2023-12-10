@@ -3,7 +3,7 @@ package me.markoutte.sandbox.algorithms;
 // Knuth
 public class Mean {
 
-    private int count = 0;
+    protected int count = 0;
     private double mean = 0.0;
 
     public void add(double x) {

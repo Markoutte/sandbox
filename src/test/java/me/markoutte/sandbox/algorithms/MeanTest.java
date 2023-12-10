@@ -28,7 +28,7 @@ public class MeanTest {
     public void test2() {
         Random random = new Random();
         for (int i = 0; i < 1000000; i++) {
-            MonotonicMean mean = new MonotonicMean(System.nanoTime());
+            BalancedMean mean = new BalancedMean();
             long sum = 0;
             int runs = random.nextInt(1, 300);
             for (int j = 0; j < runs; j++) {

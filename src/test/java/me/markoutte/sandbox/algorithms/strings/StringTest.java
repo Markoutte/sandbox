@@ -1,12 +1,17 @@
 package me.markoutte.sandbox.algorithms.strings;
 
+import me.markoutte.sandbox.algorithms.BalancedMean;
 import me.markoutte.sandbox.algorithms.Mean;
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.Comparator;
 import java.util.Map;
 import java.util.Random;
+import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -48,8 +53,8 @@ public class StringTest {
     }
 
     @Test
-    public void runDefaultStress() {
-        stressTest(string, 100000, Integer.MAX_VALUE, new Random().nextInt());
+    public void runDefaultStress() throws IOException {
+        runStress(System.out, string, string.length(), 10000);
     }
 
     @Test
@@ -58,29 +63,69 @@ public class StringTest {
         try (var s = StringSearch.class.getClassLoader().getResourceAsStream("alice.txt")) {
             text = new String(s.readAllBytes());
         }
-        // 275 is where Boyer Moore and KMP has similar time at my machine
-        stressTest(text, 10000, 275, new Random().nextInt());
+        Path path = Path.of("stringSearch.csv");
+        try (var writer = new PrintStream(Files.newOutputStream(path, StandardOpenOption.CREATE))) {
+            runStress(writer, text, 1000, 10000);
+        }
     }
 
-    public static void stressTest(String text, int runs, int limit, int seedValue) {
-        System.out.println("Runs: " + runs);
-        System.out.println("Limit: " + limit);
-        System.out.println("Seed: " + seedValue);
+    @FunctionalInterface
+    private interface ConsumerWithIO {
+
+        void accept(Map<? extends StringSearch, ? extends Mean> stringSearchMeanMap) throws IOException;
+    }
+
+    public static void runStress(PrintStream writer, String text, int length, int runs) throws IOException {
+        writer.append("No;N;J,RK;BM;KMP\n");
+        for (int i = 1; i < length - 1; i++) {
+            final var fi = i;
+            stressTest(text, runs, i, new Random().nextInt(), stringSearchMeanMap -> {
+                double[] means = new double[5];
+                stringSearchMeanMap.forEach((stringSearch, mean) -> {
+                    if (stringSearch instanceof JavaStringSearch) {
+                        means[0] = mean.getMean();
+                    }
+                    if (stringSearch instanceof NaiveSearch) {
+                        means[1] = mean.getMean();
+                    }
+                    if (stringSearch instanceof RabinKarpSearch) {
+                        means[2] = mean.getMean();
+                    }
+                    if (stringSearch instanceof BoyerMooreSearch) {
+                        means[3] = mean.getMean();
+                    }
+                    if (stringSearch instanceof KnuthMorrisPrattSearch) {
+                        means[4] = mean.getMean();
+                    }
+                });
+                writer.append("%d;%.2f;%.2f;%.2f;%.2f;%.2f\n".formatted(fi, means[0], means[1], means[2], means[3], means[4]));
+                writer.flush();
+            });
+        }
+    }
+
+    public static void stressTest(String text, int runs, int length, int seedValue, ConsumerWithIO out) throws IOException {
         Random random = new Random(seedValue);
+        if (length >= text.length()) {
+            throw new IllegalArgumentException("Length " + length + " is greater than text's length");
+        }
 
         var algorithms = Map.of(
-                new NaiveSearch(), new Mean(),
-                new BoyerMooreSearch(), new Mean(),
-                new KnuthMorrisPrattSearch(), new Mean(),
-                new RabinKarpSearch(), new Mean()
+                new JavaStringSearch(), new BalancedMean(),
+                new NaiveSearch(), new BalancedMean(),
+                new BoyerMooreSearch(), new BalancedMean(),
+                new KnuthMorrisPrattSearch(), new BalancedMean(),
+                new RabinKarpSearch(), new BalancedMean()
         );
         for (int i = 0; i < runs; i++) {
-            final int start = random.nextInt(text.length() - 1);
+            final int start;
             final int end;
-            if (limit < 0 || limit > Integer.MAX_VALUE - text.length()) {
+            if (length < 0) {
+                start = random.nextInt(text.length() - 1);
                 end = random.nextInt(start + 1, text.length());
             } else {
-                end = random.nextInt(start + 1, Math.min(start + 1 + limit, text.length()));
+                start = random.nextInt(text.length() - 1 - length);
+                end = random.nextInt(start + 1, start + 1 + length);
             }
             final String pattern = text.substring(start, end);
             final int expected = text.indexOf(pattern);
@@ -95,12 +140,6 @@ public class StringTest {
                 mean.add(e - s);
             });
         }
-        algorithms.keySet().stream()
-                .sorted(Comparator.comparing(o -> o.getClass().getSimpleName()))
-                .forEach(stringSearch -> {
-                    double mean = algorithms.get(stringSearch).getMean();
-                    String name = stringSearch.getClass().getSimpleName();
-                    System.out.printf("%s: ~%.1f ns\n", name, mean);
-                });
+        out.accept(algorithms);
     }
 }

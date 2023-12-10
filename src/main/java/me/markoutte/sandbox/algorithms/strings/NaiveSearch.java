@@ -4,13 +4,10 @@ public class NaiveSearch implements StringSearch {
 
     @Override
     public int find(String p, String s) {
-        failed: for (int i = 0; i < s.length() - p.length(); i++) {
-            for (int j = 0; j < p.length(); j++) {
-                if (s.charAt(i + j) != p.charAt(j)) {
-                    continue failed;
-                }
+        for (int i = 0; i < s.length() - p.length(); i++) {
+            if (equals(p, s, i, i + p.length())) {
+                return i;
             }
-            return i;
         }
         return -1;
     }
