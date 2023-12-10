@@ -76,7 +76,7 @@ public class StringTest {
     }
 
     public static void runStress(PrintStream writer, String text, int length, int runs) throws IOException {
-        writer.append("No;N;J,RK;BM;KMP\n");
+        writer.append("No;N;J;RK;BM;KMP\n");
         for (int i = 1; i < length - 1; i++) {
             final var fi = i;
             stressTest(text, runs, i, new Random().nextInt(), stringSearchMeanMap -> {
