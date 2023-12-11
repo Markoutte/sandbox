@@ -4,21 +4,22 @@ import java.util.Objects;
 
 public class OpenTable<K, V> implements AssociativeArray<K, V> {
 
-    final Node[] table;
+    final Node<K, V>[] table;
     private int size = 0;
 
     public OpenTable(int capacity) {
-        table = new OpenTable.Node[capacity];
+        //noinspection unchecked
+        table = new Node[capacity];
     }
 
     private int place(K key, int i) {
         return (key.hashCode() + i) % table.length;
     }
 
-    private Node find(K key) {
+    private Node<K, V> find(K key) {
         for (int i = 0; i < table.length; i++) {
-            var newPlace = place(key, i) % table.length;
-            Node node = table[newPlace];
+            int newPlace = place(key, i) % table.length;
+            Node<K, V> node = table[newPlace];
             if (node == null) {
                 return null;
             }
@@ -31,22 +32,22 @@ public class OpenTable<K, V> implements AssociativeArray<K, V> {
 
     @Override
     public V get(K key) {
-        Node node = find(key);
+        Node<K, V> node = find(key);
         return node == null ? null : node.value;
     }
 
     @Override
     public V put(K key, V value) {
-        Node node = find(key);
+        Node<K, V> node = find(key);
         if (node != null) {
-            var oldValue = node.value;
+            V oldValue = node.value;
             node.value = value;
             return oldValue;
         } else {
             for (int i = 0; i < table.length; i++) {
                 int place = place(key, i);
                 if (table[place] == null || table[place].deleted) {
-                    table[place] = new Node(key, value);
+                    table[place] = new Node<>(key, value);
                     size++;
                     return null;
                 }
@@ -57,7 +58,7 @@ public class OpenTable<K, V> implements AssociativeArray<K, V> {
 
     @Override
     public V remove(K key) {
-        Node node = find(key);
+        Node<K, V> node = find(key);
         if (node != null) {
             node.deleted = true;
             size--;
@@ -72,7 +73,7 @@ public class OpenTable<K, V> implements AssociativeArray<K, V> {
         return size;
     }
 
-    class Node {
+    static class Node<K, V> {
 
         final K key;
         V value;

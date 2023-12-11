@@ -52,9 +52,15 @@ public class StringTest {
         assertEquals(result, new RabinKarpSearch().find(pattern, string));
     }
 
+    private static final int maxPatternLength = 1000;
+    private static final int patternLength = 256;
+    private static final int maxTextLength = 5000;
+    private static final int runs = 10_000;
+
     @Test
-    public void runDefaultStress() throws IOException {
-        runStress(System.out, string, string.length(), 10000);
+    public void runDefaultStress() {
+        runVariablePatternLengthStressTest(string, string.length(), runs, System.out);
+//        runVariableTextLengthStressTest(string, string.length(), patternLength, runs, System.out);
     }
 
     @Test
@@ -72,7 +78,8 @@ public class StringTest {
         final String text = sb.toString();
         Path path = Path.of("string-code.csv");
         try (var writer = new PrintStream(Files.newOutputStream(path, StandardOpenOption.CREATE))) {
-            runStress(writer, text, 1000, 10000);
+//            runVariablePatternLengthStressTest(text, maxPatternLength, runs, writer);
+            runVariableTextLengthStressTest(text, maxTextLength, patternLength, runs, writer);
         }
     }
 
@@ -84,7 +91,8 @@ public class StringTest {
         }
         Path path = Path.of("string-dna.csv");
         try (var writer = new PrintStream(Files.newOutputStream(path, StandardOpenOption.CREATE))) {
-            runStress(writer, text, 1000, 10000);
+            runVariablePatternLengthStressTest(text, maxPatternLength, runs, writer);
+//            runVariableTextLengthStressTest(text, maxTextLength, patternLength, runs, writer);
         }
     }
 
@@ -96,7 +104,8 @@ public class StringTest {
         }
         Path path = Path.of("string-alice.csv");
         try (var writer = new PrintStream(Files.newOutputStream(path, StandardOpenOption.CREATE))) {
-            runStress(writer, text, 1000, 10000);
+//            runVariablePatternLengthStressTest(text, maxPatternLength, runs, writer);
+            runVariableTextLengthStressTest(text, maxTextLength, patternLength, runs, writer);
         }
     }
 
@@ -106,14 +115,14 @@ public class StringTest {
         void accept(Map<? extends StringSearch, ? extends Mean> stringSearchMeanMap) throws IOException;
     }
 
-    public static void runStress(PrintStream writer, String text, int length, int runs) throws IOException {
+    public static void runVariableTextLengthStressTest(String text, int maxTextLength, int patternLength, int runs, PrintStream writer) {
         writer.append("No;J;N;RK;BM;KMP\n");
-        for (int i = 1; i < length - 1; i++) {
-            final var fi = i;
-            stressTest(text, runs, i, new Random().nextInt(), stringSearchMeanMap -> {
+        for (int textLength = patternLength + 1; textLength < maxTextLength; textLength++) {
+            final var fi = textLength;
+            stressTest(text.substring(0, textLength), patternLength, runs, new Random().nextInt(), stringSearchMeanMap -> {
                 double[] means = new double[5];
                 stringSearchMeanMap.forEach((stringSearch, mean) -> {
-                    if (stringSearch instanceof JavaStringSearch) {
+                    if (stringSearch instanceof JavaSearch) {
                         means[0] = mean.getMean();
                     }
                     if (stringSearch instanceof NaiveSearch) {
@@ -135,14 +144,64 @@ public class StringTest {
         }
     }
 
-    public static void stressTest(String text, int runs, int length, int seedValue, ConsumerWithIO out) throws IOException {
+    public static void runVariablePatternLengthStressTest(String text, int maxPatternLength, int runs, PrintStream writer) {
+        writer.append("No;J;N;RK;BM;KMP\n");
+        for (int patternLength = 1; patternLength < maxPatternLength; patternLength++) {
+            final var fi = patternLength;
+            stressTest(text, patternLength, runs, new Random().nextInt(), stringSearchMeanMap -> {
+                double[] means = new double[5];
+                stringSearchMeanMap.forEach((stringSearch, mean) -> {
+                    if (stringSearch instanceof JavaSearch) {
+                        means[0] = mean.getMean();
+                    }
+                    if (stringSearch instanceof NaiveSearch) {
+                        means[1] = mean.getMean();
+                    }
+                    if (stringSearch instanceof RabinKarpSearch) {
+                        means[2] = mean.getMean();
+                    }
+                    if (stringSearch instanceof BoyerMooreSearch) {
+                        means[3] = mean.getMean();
+                    }
+                    if (stringSearch instanceof KnuthMorrisPrattSearch) {
+                        means[4] = mean.getMean();
+                    }
+                });
+                writer.append("%d;%.2f;%.2f;%.2f;%.2f;%.2f\n".formatted(fi, means[0], means[1], means[2], means[3], means[4]));
+                writer.flush();
+            });
+        }
+    }
+
+    /**
+     * Runs stress test for a given pattern's length.
+     * <p>
+     * If pattern length <= 0 then random length is used. Random is seeded by seedValue.
+     * This method cuts pattern with the given length from random place in the source text
+     * and then runs search algorithms:
+     *
+     * <ul>
+     *     <li>{@link JavaSearch} is Java's implementation that uses {@link String#indexOf(String)}</li>
+     *     <li>{@link NaiveSearch} is a naive search implementation</li>
+     *     <li>{@link RabinKarpSearch}</li>
+     *     <li>{@link BoyerMooreSearch}</li>
+     *     <li>{@link KnuthMorrisPrattSearch}</li>
+     * </ul>
+     *
+     * @param text A text for search.
+     * @param patternLength Given length of a pattern to search in or -1 for random length. Pattern is generated from the text.
+     * @param runs The total number of calling every implementation of {@link StringSearch}
+     * @param seedValue this value is used to seed Random
+     * @param out consumes the result of one run
+     */
+    private static void stressTest(String text, int patternLength, int runs, int seedValue, ConsumerWithIO out) {
         Random random = new Random(seedValue);
-        if (length >= text.length()) {
-            throw new IllegalArgumentException("Length " + length + " is greater than text's length");
+        if (patternLength > text.length()) {
+            throw new IllegalArgumentException("Length " + patternLength + " is greater than text's length");
         }
 
         var algorithms = Map.of(
-                new JavaStringSearch(), new BalancedMean(),
+                new JavaSearch(), new BalancedMean(),
                 new NaiveSearch(), new BalancedMean(),
                 new BoyerMooreSearch(), new BalancedMean(),
                 new KnuthMorrisPrattSearch(), new BalancedMean(),
@@ -151,23 +210,28 @@ public class StringTest {
         for (int i = 0; i < runs; i++) {
             final int start;
             final int end;
-            if (length < 0) {
+            if (patternLength <= 0) {
                 start = random.nextInt(text.length() - 1);
                 end = random.nextInt(start + 1, text.length());
             } else {
-                start = random.nextInt(text.length() - 1 - length);
-                end = start + length;
+                int bound = text.length() - patternLength + 1;
+                start = random.nextInt(bound);
+                end = start + patternLength;
             }
             final String pattern = text.substring(start, end);
             final int expected = text.indexOf(pattern);
             algorithms.forEach((stringSearch, mean) -> {
                 long s = System.nanoTime();
                 int actual = stringSearch.find(pattern, text);
-                assertEquals(expected, actual, () -> "Cannot find pattern " + pattern + " for " + stringSearch);
+                assertEquals(expected, actual, () -> "Cannot find pattern " + pattern + " for " + stringSearch.getClass().getSimpleName());
                 long e = System.nanoTime();
                 mean.add(e - s);
             });
         }
-        out.accept(algorithms);
+        try {
+            out.accept(algorithms);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

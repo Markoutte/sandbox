@@ -8,7 +8,7 @@ public class RabinKarpSearch implements StringSearch {
         int hs = stringHashCode(pattern, 0, patternLength);
         int stringLength = string.length();
         int st = stringHashCode(string, 0, patternLength);
-        for (int i = 0; i < stringLength - patternLength; i++) {
+        for (int i = 0; i <= stringLength - patternLength; i++) {
             if (hs == st && equals(pattern, string, i, i + patternLength)) {
                 return i;
             }
