@@ -6,7 +6,7 @@ version = "1.0"
 plugins {
     java
     kotlin("jvm") version "1.8.10"
-    id("org.jetbrains.compose") version "1.3.1"
+    id("org.jetbrains.compose") version "1.5.11"
     id("org.springframework.boot") version "3.0.5"
     id("io.spring.dependency-management") version "1.0.11.RELEASE"
 }
