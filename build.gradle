@@ -1,31 +1,25 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
-group = "me.markoutte"
-version = "1.0"
-
 plugins {
-    java
-    kotlin("jvm") version "1.8.10"
-    id("org.jetbrains.compose") version "1.5.11"
-    id("org.springframework.boot") version "3.0.5"
-    id("io.spring.dependency-management") version "1.0.11.RELEASE"
-    id("me.champeau.jmh") version "0.7.2"
+    id 'java'
+    id 'org.jetbrains.kotlin.jvm' version "1.8.10"
+//    id 'org.jetbrains.compose' version "1.5.11"
+    id 'org.springframework.boot' version "3.0.5"
+    id 'io.spring.dependency-management' version "1.0.11.RELEASE"
+    id 'me.champeau.jmh' version "0.7.2"
 }
 
-val kotlinCoroutineVersion = "1.6.4"
-val junitVersion = "5.9.2"
-val guavaVersion = "32.1.1-jre"
-val fastjsonVersion = "2.0.40"
+var kotlinCoroutineVersion = '1.6.4'
+var junitVersion = '5.9.2'
+var guavaVersion = '32.1.1-jre'
+var fastjsonVersion = '2.0.40'
 
 repositories {
     mavenLocal()
     google()
     mavenCentral()
-    maven { url = uri("https://maven.pkg.jetbrains.space/public/p/compose/dev") }
+//    maven { url = uri("https://maven.pkg.jetbrains.space/public/p/compose/dev") }
 }
 
 dependencies {
-    implementation(compose.desktop.currentOs)
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinCoroutineVersion")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-swing:$kotlinCoroutineVersion")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:$kotlinCoroutineVersion")
@@ -48,8 +42,8 @@ dependencies {
 
 java.sourceCompatibility = JavaVersion.VERSION_19
 
-tasks.withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = "19"
+kotlin {
+    jvmToolchain(19)
 }
 
 tasks.test {
